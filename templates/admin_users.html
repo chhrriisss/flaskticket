@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>User Management</h2>
+    </div>
+    <div class="card-body">
+        <!-- Create User Form -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3>Create New User</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_user') }}">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="username">Username:</label>
+                                <input type="text" id="username" name="username" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="name">Full Name:</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="role">Role:</label>
+                                <select id="role" name="role" class="form-control" required>
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="can_assign" value="1">
+                            Can assign tasks to others
+                        </label>
+                    </div>
+                    
+                    <div class="form-group text-right">
+                        <button type="submit" class="btn btn-success">Create User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Users List -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Existing Users</h3>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th>Can Assign</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for username, user_data in users.items() %}
+                        <tr>
+                            <td><strong>{{ username }}</strong></td>
+                            <td>{{ user_data.name }}</td>
+                            <td>
+                                <span class="{% if user_data.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}">
+                                    {{ user_data.role|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user_data.can_assign %}
+                                <span class="status-completed">Yes</span>
+                                {% else %}
+                                <span class="status-hold">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if username != 'admin' %}
+                                <a href="{{ url_for('edit_user', username=username) }}" 
+                                   class="btn btn-primary" 
+                                   style="font-size: 11px; padding: 4px 8px;">
+                                   Edit
+                                </a>
+                                <a href="{{ url_for('delete_user', username=username) }}" 
+                                   class="btn btn-danger" 
+                                   style="font-size: 11px; padding: 4px 8px;"
+                                   onclick="return confirm('Are you sure you want to delete user {{ username }}?')">
+                                   Delete
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('edit_user', username=username) }}" 
+                                   class="btn btn-primary" 
+                                   style="font-size: 11px; padding: 4px 8px;">
+                                   Edit
+                                </a>
+                                <span style="color: #999; font-size: 11px;">Cannot Delete</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-info">No users found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-3">
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Back to Admin Panel</a>
+</div>
+{% endblock %}

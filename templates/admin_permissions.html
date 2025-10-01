@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Permission Management - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>User Permission Matrix</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th style="text-align: center;">Create</th>
+                        <th style="text-align: center;">Read</th>
+                        <th style="text-align: center;">Update</th>
+                        <th style="text-align: center;">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, user_data in users.items() %}
+                    {% if username != 'admin' %}
+                    <tr>
+                        <td><strong>{{ user_data.name }}</strong><br><small style="color: #666;">{{ username }}</small></td>
+                        <td><span class="status-ongoing">{{ user_data.role|title }}</span></td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="create_{{ username }}" 
+                                   {% if user_data.get('permissions', {}).get('package_create', False) %}checked{% endif %}>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="read_{{ username }}" 
+                                   {% if user_data.get('permissions', {}).get('package_read', False) %}checked{% endif %}>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="update_{{ username }}" 
+                                   {% if user_data.get('permissions', {}).get('package_update', False) %}checked{% endif %}>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="delete_{{ username }}" 
+                                   {% if user_data.get('permissions', {}).get('package_delete', False) %}checked{% endif %}>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Admin row (read-only) -->
+                    <tr style="background-color: #f0f0f0;">
+                        <td><strong>{{ users.admin.name }}</strong><br><small style="color: #666;">admin</small></td>
+                        <td><span class="status-completed">Admin</span></td>
+                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
+                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
+                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
+                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="alert alert-info">
+                <strong>Note:</strong> Admin always has all permissions. Unchecked permissions will prevent users from performing those actions.
+            </div>
+            
+            <div class="form-group text-right">
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save Permissions</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Admin Panel</h2>
+    </div>
+    <div class="card-body">
+        <!-- First row: User Management & Field Configuration -->
+        <div class="form-row">
+            <!-- User Management Card -->
+            <div class="form-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>User Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Manage system users, roles, and permissions.</p>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-primary">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Field Configuration Card -->
+            <div class="form-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Field Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Configure form fields, dropdowns, and field properties.</p>
+                        <a href="{{ url_for('admin_config') }}" class="btn btn-primary">Configure Fields</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second row: Package Management & System Information -->
+        <div class="form-row">
+            <!-- Package Management Card -->
+            <div class="form-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Package Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>View and manage all packages in the system.</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">View All Packages</a>
+                        <a href="{{ url_for('create_package') }}" class="btn btn-success">Create Package</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information Card -->
+            <div class="form-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Application:</strong> Ticketing Tool v1.0</p>
+                        <p><strong>Storage:</strong> JSON Files</p>
+                        <p><strong>Status:</strong> Running</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third row: Permission Management -->
+        <div class="form-row">
+            <!-- Permission Management Card -->
+            <div class="form-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Permission Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Control what each user can do with packages.</p>
+                        <a href="{{ url_for('admin_permissions') }}" class="btn btn-primary">Manage Permissions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

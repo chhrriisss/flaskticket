@@ -1,0 +1,26 @@
+{
+  "admin": {
+    "password": "admin123",
+    "role": "admin",
+    "name": "Administrator",
+    "can_assign": true,
+    "permissions": {
+      "package_create": true,
+      "package_read": true,
+      "package_update": true,
+      "package_delete": true
+    }
+  },
+  "user1": {
+    "password": "user123",
+    "role": "user",
+    "name": "User One",
+    "can_assign": false,
+    "permissions": {
+      "package_create": true,
+      "package_read": true,
+      "package_update": true,
+      "package_delete": false
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Edit User: {{ username }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" class="form-control" 
+                               value="{{ username }}" required
+                               {% if username == 'admin' %}readonly title="Admin username cannot be changed"{% endif %}>
+                        {% if username == 'admin' %}
+                        <small style="color: #666; font-size: 12px;">Admin username cannot be changed</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" class="form-control" 
+                               value="{{ user_data.password }}" required>
+                        <small style="color: #666; font-size: 12px;">Leave as-is or enter new password</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="name">Full Name:</label>
+                        <input type="text" id="name" name="name" class="form-control" 
+                               value="{{ user_data.name }}" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="role">Role:</label>
+                        <select id="role" name="role" class="form-control" required>
+                            <option value="user" {% if user_data.role == 'user' %}selected{% endif %}>User</option>
+                            <option value="admin" {% if user_data.role == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="can_assign" value="1" 
+                           {% if user_data.can_assign %}checked{% endif %}>
+                    Can assign tasks to others
+                </label>
+            </div>
+            
+            <div class="form-group text-right">
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if username != 'admin' %}
+<div class="card">
+    <div class="card-header">
+        <h3>Danger Zone</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Delete User:</strong> This action cannot be undone.</p>
+        <a href="{{ url_for('delete_user', username=username) }}" 
+           class="btn btn-danger"
+           onclick="return confirm('Are you sure you want to permanently delete user {{ username }}? This action cannot be undone.')">
+           Delete User
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

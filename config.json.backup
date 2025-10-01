@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "fields": {
+    "STATUS": {
+      "type": "dropdown",
+      "label": "Status",
+      "editable": true,
+      "options": [
+        "A",
+        "C",
+        "D",
+        "H",
+        "O",
+        "WO"
+      ],
+      "permissions": {
+        "admin": {
+          "read": false,
+          "write": false,
+          "delete": false
+        },
+        "user": {
+          "read": true,
+          "write": false,
+          "delete": false
+        }
+      }
+    },
+    "PORT NAME": {
+      "type": "dropdown",
+      "label": "Port Name",
+      "editable": true,
+      "options": [
+        "Arakkonam",
+        "DPPL",
+        "Jaigarh",
+        "Jatadhar",
+        "JNPA",
+        "Keni",
+        "Murbe",
+        "Slurry",
+        "SMPA",
+        "VOC",
+        "HO"
+      ],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "PROJECT": {
+      "type": "text",
+      "label": "Project",
+      "editable": false,
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "SOW": {
+      "type": "dropdown",
+      "label": "SOW Recieved",
+      "editable": true,
+      "options": [
+        "Yes",
+        "No",
+        "Pending"
+      ],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "SOW DATE": {
+      "type": "date",
+      "label": "SOW Date",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "PR": {
+      "type": "dropdown",
+      "label": "PR Recieved",
+      "editable": true,
+      "options": [
+        "Yes",
+        "No",
+        "Pending"
+      ],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "PR DATE": {
+      "type": "date",
+      "label": "PR Date",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "TR": {
+      "type": "dropdown",
+      "label": "TR Recieved",
+      "editable": true,
+      "options": [
+        "Yes",
+        "No",
+        "Pending"
+      ],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "TR DATE": {
+      "type": "date",
+      "label": "TR Date",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "COMMERCIAL TARGET DATE": {
+      "type": "date",
+      "label": "As per file status",
+      "editable": false,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "ACTION BY": {
+      "type": "dropdown",
+      "label": "Action By",
+      "editable": false,
+      "options": [
+        "Corp. Comm.",
+        "CPC",
+        "HO Comm. & User",
+        "Site",
+        "User"
+      ],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "CPC PERSON": {
+      "type": "text",
+      "label": "CPC person",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "COMMERCIAL CLOSURE DATE": {
+      "type": "date",
+      "label": "As per project schedule",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "DELIVERY/COMP LEAD TIME": {
+      "type": "text",
+      "label": "Lead time to delivery",
+      "editable": false,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "PACKAGE COMMISION DATE": {
+      "type": "date",
+      "label": "As per project schedule",
+      "editable": false,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "ACTUAL CLOSURE DATE": {
+      "type": "date",
+      "label": "Actual date of closure",
+      "editable": false,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    },
+    "REMARKS": {
+      "type": "text",
+      "label": "REMARKS",
+      "editable": true,
+      "options": [],
+      "permissions": {
+        "admin": {
+          "read": true,
+          "write": true,
+          "delete": true
+        },
+        "user": {
+          "read": true,
+          "write": true,
+          "delete": false
+        }
+      }
+    }
+  }
+}

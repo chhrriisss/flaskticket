@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Field - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Edit Field: {{ field_name }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="field_name">Field Name (System):</label>
+                        <input type="text" id="field_name" name="field_name" class="form-control" 
+                               value="{{ field_name }}" required>
+                        <small style="color: #666; font-size: 12px;">Use lowercase with underscores</small>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="field_label">Field Label (Display):</label>
+                        <input type="text" id="field_label" name="field_label" class="form-control" 
+                               value="{{ field_config.label }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="field_type">Field Type:</label>
+                        <select id="field_type" name="field_type" class="form-control" required onchange="toggleOptions()">
+                            <option value="text" {% if field_config.type == 'text' %}selected{% endif %}>Text Input</option>
+                            <option value="date" {% if field_config.type == 'date' %}selected{% endif %}>Date Input</option>
+                            <option value="dropdown" {% if field_config.type == 'dropdown' %}selected{% endif %}>Dropdown (Single Select)</option>
+                            <option value="multiselect" {% if field_config.type == 'multiselect' %}selected{% endif %}>Multi-Select</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="options_group">
+                <label for="options">Options (for dropdown/multiselect):</label>
+                <textarea id="options" name="options" class="form-control" rows="3" 
+                          placeholder="Option 1, Option 2, Option 3">{{ field_config.get('options', [])|join(', ') }}</textarea>
+                <small style="color: #666; font-size: 12px;">Separate options with commas</small>
+            </div>
+            
+            <div class="form-group text-right">
+                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Field</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Current Configuration</h3>
+    </div>
+    <div class="card-body">
+        <div class="form-row">
+            <div class="form-col">
+                <strong>Field Name:</strong> <code>{{ field_name }}</code><br>
+                <strong>Label:</strong> {{ field_config.label }}<br>
+                <strong>Type:</strong> <span class="status-ongoing">{{ field_config.type|title }}</span>
+            </div>
+            <div class="form-col">
+                <strong>Options:</strong> 
+                {% if field_config.get('options') %}
+                {{ field_config.options|join(', ') }}
+                {% else %}
+                <span style="color: #999;">None</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Danger Zone</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Delete Field:</strong> This will remove the field from all packages. This action cannot be undone.</p>
+        <a href="{{ url_for('delete_field_config', field_name=field_name) }}" 
+           class="btn btn-danger"
+           onclick="return confirm('Are you sure you want to permanently delete field {{ field_name }}? This will remove it from all packages and cannot be undone.')">
+           Delete Field
+        </a>
+    </div>
+</div>
+
+<script>
+function toggleOptions() {
+    const fieldType = document.getElementById('field_type').value;
+    const optionsGroup = document.getElementById('options_group');
+    
+    if (fieldType === 'dropdown' || fieldType === 'multiselect') {
+        optionsGroup.style.display = 'block';
+    } else {
+        optionsGroup.style.display = 'none';
+    }
+}
+
+// Initialize options visibility
+document.addEventListener('DOMContentLoaded', function() {
+    toggleOptions();
+});
+</script>
+{% endblock %}

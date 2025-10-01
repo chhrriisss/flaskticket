@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Package - Ticketing Tool{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Edit Package: {{ package.id }}</h2>
+            <div>
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="add_column">
+                    <button type="submit" class="btn btn-success" style="font-size: 12px; padding: 6px 12px;">
+                        + Add Column
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Package Info -->
+        <div class="alert alert-info" style="margin-bottom: 20px;">
+            <strong>Package Info:</strong><br>
+            Created by: {{ package.created_by }} on {{ package.created_at[:10] if package.created_at else 'Unknown' }}<br>
+            {% if package.updated_at %}
+            Last updated by: {{ package.updated_by }} on {{ package.updated_at[:10] }}
+            {% endif %}
+        </div>
+
+        <!-- Assigned Users Section (Admin only) -->
+        {% if session.role == 'admin' %}
+        <form method="POST" id="mainForm">
+            <input type="hidden" name="action" value="update">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="assigned_users">Assign to Users:</label>
+                <select name="assigned_users" id="assigned_users" class="form-control" multiple required>
+                    {% for username, user_data in users.items() %}
+                    {% if username != 'admin' %}
+                    <option value="{{ username }}" {% if username in package.assigned_users %}selected{% endif %}>
+                        {{ user_data.name }} ({{ username }})
+                    </option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple users</small>
+            </div>
+        {% else %}
+        <form method="POST" id="mainForm">
+            <input type="hidden" name="action" value="update">
+        {% endif %}
+
+ <!-- Gantt Chart Style Table -->
+<div class="gantt-container">
+    <table class="gantt-table">
+        <thead>
+            <tr>
+                <th class="field-label-column">Field</th>
+                {% for column_date in package.gantt_columns %}
+                <th class="gantt-column-header">
+                    <div class="column-header-content">
+                        <div class="column-date">{{ column_date }}</div>
+                        {% if package.gantt_columns|length > 1 %}
+                            {% set user_can_delete_columns = fresh_role == 'admin' %}
+                            {% if fresh_role != 'admin' %}
+                                {% set user_can_delete_columns = true %}
+                                {% for fname in config.fields.keys() %}
+                                    {% if not can_access_field(fname, 'delete') %}
+                                        {% set user_can_delete_columns = false %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            
+                            {% if user_can_delete_columns %}
+                            <a href="{{ url_for('delete_column', package_id=package.id, column_date=column_date) }}"
+                               class="btn btn-danger"
+                               style="font-size: 10px; padding: 2px 6px; margin-left: 5px;"
+                               onclick="return confirm('Are you sure you want to delete this column?')">
+                                Delete Column
+                            </a>
+                            {% endif %}
+                        {% endif %}     
+                    </div>
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for field_name, field_config in config.fields.items() %}
+            {% set is_editable = can_access_field(field_name, 'write') %}
+            <tr class="gantt-row">
+                <td class="field-label">
+                    {{ field_config.label }}
+                    {% if not is_editable %}
+                    <span class="readonly-indicator">(Read-only)</span>
+                    {% endif %}
+                </td>
+                {% for column_date in package.gantt_columns %}
+                <td class="gantt-cell {% if not is_editable %}readonly{% endif %}">
+                    {% set field_value = package.data_timeline.get(column_date, {}).get(field_name, '') %}
+                    {% set form_field_name = field_name + '_' + column_date %}
+                    
+                    {% if field_config.type == 'text' %}
+                        {% if field_name == 'remarks' %}
+                        <textarea name="{{ form_field_name }}" class="gantt-input gantt-textarea" 
+                                  {% if not is_editable %}readonly{% endif %}>{{ field_value }}</textarea>
+                        {% else %}
+                        <input type="text" name="{{ form_field_name }}" class="gantt-input" 
+                               value="{{ field_value }}" {% if not is_editable %}readonly{% endif %}>
+                        {% endif %}
+                    
+                    {% elif field_config.type == 'date' %}
+                    <input type="date" name="{{ form_field_name }}" class="gantt-input" 
+                           value="{{ field_value }}" {% if not is_editable %}readonly{% endif %}>
+                    
+                    {% elif field_config.type == 'dropdown' %}
+                    <select name="{{ form_field_name }}" class="gantt-input" {% if not is_editable %}disabled{% endif %}>
+                        <option value="">Select...</option>
+                        {% for option in field_config.options %}
+                        <option value="{{ option }}" {% if option == field_value %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if not is_editable %}
+                    <input type="hidden" name="{{ form_field_name }}" value="{{ field_value }}">
+                    {% endif %}
+                    
+                    {% elif field_config.type == 'multiselect' %}
+                    <select name="{{ form_field_name }}" class="gantt-input gantt-multiselect" multiple {% if not is_editable %}disabled{% endif %}>
+                        {% for option in field_config.options %}
+                        <option value="{{ option }}" {% if option in field_value %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if not is_editable %}
+                    {% for value in field_value %}
+                    <input type="hidden" name="{{ form_field_name }}" value="{{ value }}">
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="form-actions">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary">Update Package</button>
+</div>
+
+</form>
+</div>
+</div>
+
+
+<!-- Assignment History (if admin) -->
+{% if session.role == 'admin' %}
+<div class="card">
+    <div class="card-header">
+        <h3>Currently Assigned Users</h3>
+    </div>
+    <div class="card-body">
+        {% if package.assigned_users %}
+        <div class="form-row">
+            {% for username in package.assigned_users %}
+            {% set user_data = users.get(username, {}) %}
+            <div class="form-col">
+                <div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #dee2e6; text-align: center;">
+                    <strong>{{ user_data.get('name', username) }}</strong><br>
+                    <small style="color: #666;">{{ username }}</small><br>
+                    <small style="color: #666;">{{ user_data.get('role', 'Unknown') }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">No users assigned to this package.</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+.gantt-container {
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.gantt-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    font-size: 12px;
+}
+
+.gantt-table th,
+.gantt-table td {
+    border: 1px solid #ddd;
+    vertical-align: top;
+    position: relative;
+}
+
+.field-label-column {
+    background-color: #f8f9fa;
+    width: 200px;
+    min-width: 200px;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.gantt-column-header {
+    background-color: #e9ecef;
+    min-width: 200px;
+    width: 200px;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    position: relative;
+}
+
+.column-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-date {
+    font-size: 11px;
+    color: #0066cc;
+    word-break: break-all;
+}
+
+.delete-column-btn {
+    color: #dc3545;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.delete-column-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+}
+
+.field-label {
+    background-color: #f8f9fa;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    width: 200px;
+    min-width: 200px;
+}
+
+.readonly-indicator {
+    color: #999;
+    font-size: 10px;
+    font-weight: normal;
+    display: block;
+}
+
+.gantt-cell {
+    padding: 8px;
+    min-width: 200px;
+    width: 200px;
+    vertical-align: middle;
+}
+
+.gantt-cell.readonly {
+    background-color: #f9f9f9;
+}
+
+.gantt-input {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 6px;
+    font-size: 11px;
+    border-radius: 3px;
+    background: white;
+}
+
+.gantt-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 3px rgba(0, 102, 204, 0.3);
+}
+
+.gantt-input:disabled,
+.gantt-input[readonly] {
+    background-color: #f8f9fa;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.gantt-textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.gantt-multiselect {
+    height: 80px;
+}
+
+.gantt-row:nth-child(even) {
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+.gantt-row:hover {
+    background-color: rgba(0, 102, 204, 0.05);
+}
+
+.form-actions {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    text-align: right;
+}
+
+/* Status styling in cells */
+.gantt-cell select option[value="Ongoing"] {
+    background-color: #28a745;
+    color: white;
+}
+
+.gantt-cell select option[value="Hold"] {
+    background-color: #ffc107;
+    color: black;
+}
+
+.gantt-cell select option[value="Completed"] {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.gantt-cell select option[value="Cancelled"] {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .field-label-column,
+    .field-label {
+        width: 150px;
+        min-width: 150px;
+    }
+    
+    .gantt-column-header,
+    .gantt-cell {
+        min-width: 150px;
+        width: 150px;
+    }
+    
+    .column-date {
+        font-size: 10px;
+    }
+    
+    .gantt-input {
+        font-size: 10px;
+        padding: 4px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .gantt-container {
+        overflow: visible;
+    }
+    
+    .gantt-table {
+        min-width: auto;
+        font-size: 10px;
+    }
+    
+    .delete-column-btn {
+        display: none;
+    }
+    
+    .form-actions {
+        display: none;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('.gantt-textarea');
+    textareas.forEach(function(textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(60, this.scrollHeight) + 'px';
+        });
+        
+        // Initial resize
+        textarea.style.height = Math.max(60, textarea.scrollHeight) + 'px';
+    });
+    
+    // Highlight changes
+    const inputs = document.querySelectorAll('.gantt-input');
+    inputs.forEach(function(input) {
+        let originalValue = input.value;
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            originalValue = input.checked;
+        }
+        
+        input.addEventListener('input', function() {
+            let currentValue = this.value;
+            if (this.type === 'checkbox' || this.type === 'radio') {
+                currentValue = this.checked;
+            }
+            
+            if (currentValue !== originalValue) {
+                this.style.backgroundColor = '#fff3cd';
+                this.style.borderColor = '#ffc107';
+            } else {
+                this.style.backgroundColor = '';
+                this.style.borderColor = '';
+            }
+        });
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.target.classList.contains('gantt-input')) {
+            const currentInput = e.target;
+            const allInputs = Array.from(document.querySelectorAll('.gantt-input'));
+            const currentIndex = allInputs.indexOf(currentInput);
+            
+            if (e.key === 'Tab' && !e.shiftKey) {
+                // Tab navigation is handled by browser
+            } else if (e.key === 'Enter' && currentInput.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                const nextIndex = (currentIndex + 1) % allInputs.length;
+                allInputs[nextIndex].focus();
+            } else if (e.key === 'ArrowDown' && currentInput.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                // Find the input in the same column, next row
+                const table = currentInput.closest('table');
+                const cell = currentInput.closest('td');
+                const row = cell.closest('tr');
+                const cellIndex = Array.from(row.cells).indexOf(cell);
+                const nextRow = row.nextElementSibling;
+                
+                if (nextRow && nextRow.cells[cellIndex]) {
+                    const nextInput = nextRow.cells[cellIndex].querySelector('.gantt-input');
+                    if (nextInput) nextInput.focus();
+                }
+            } else if (e.key === 'ArrowUp' && currentInput.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                // Find the input in the same column, previous row
+                const cell = currentInput.closest('td');
+                const row = cell.closest('tr');
+                const cellIndex = Array.from(row.cells).indexOf(cell);
+                const prevRow = row.previousElementSibling;
+                
+                if (prevRow && prevRow.cells[cellIndex]) {
+                    const prevInput = prevRow.cells[cellIndex].querySelector('.gantt-input');
+                    if (prevInput) prevInput.focus();
+                }
+            }
+        }
+    });
+    
+    // Confirm before leaving if there are unsaved changes
+    let hasChanges = false;
+    const form = document.getElementById('mainForm');
+    
+    inputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+            hasChanges = true;
+        });
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+    
+    form.addEventListener('submit', function() {
+        hasChanges = false;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Create Package - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Create New Package</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <!-- Assigned Users Section -->
+            <div class="form-group">
+                <label for="assigned_users">Assign to Users:</label>
+                <select name="assigned_users" id="assigned_users" class="form-control" multiple required>
+                    {% for username, user_data in users.items() %}
+                    {% if username != 'admin' %}
+                    <option value="{{ username }}">{{ user_data.name }} ({{ username }})</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple users</small>
+            </div>
+            
+            <hr style="margin: 20px 0;">
+            
+            <!-- Dynamic Fields -->
+            <div class="form-row">
+                {% set field_count = 0 %}
+                {% for field_name, field_config in config.fields.items() %}
+                
+                {% if field_count % 2 == 0 and field_count > 0 %}
+                </div>
+                <div class="form-row">
+                {% endif %}
+                
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="{{ field_name }}">{{ field_config.label }}:</label>
+                        
+                        {% if field_config.type == 'text' %}
+                        <input type="text" id="{{ field_name }}" name="{{ field_name }}" class="form-control">
+                        
+                        {% elif field_config.type == 'date' %}
+                        <input type="date" id="{{ field_name }}" name="{{ field_name }}" class="form-control">
+                        
+                        {% elif field_config.type == 'dropdown' %}
+                        <select id="{{ field_name }}" name="{{ field_name }}" class="form-control">
+                            <option value="">Select...</option>
+                            {% for option in field_config.options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        {% elif field_config.type == 'multiselect' %}
+                        <select id="{{ field_name }}" name="{{ field_name }}" class="form-control" multiple>
+                            {% for option in field_config.options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                        <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple</small>
+                        
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% set field_count = field_count + 1 %}
+                {% endfor %}
+            </div>
+            
+            <div class="form-group text-right mt-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Create Package</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-expand textareas
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('input[type="text"]');
+    textareas.forEach(textarea => {
+        if (textarea.name === 'remarks') {
+            const newTextarea = document.createElement('textarea');
+            newTextarea.name = textarea.name;
+            newTextarea.id = textarea.id;
+            newTextarea.className = textarea.className;
+            newTextarea.rows = 3;
+            textarea.parentNode.replaceChild(newTextarea, textarea);
+        }
+    });
+});
+</script>
+{% endblock %}
