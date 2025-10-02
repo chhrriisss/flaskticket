@@ -7,7 +7,7 @@
     <div class="card-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2>Packages Dashboard</h2>
-            {% if session.get('permissions', {}).get('package_create', False) or session.can_assign or session.role == 'admin' %}
+            {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
             <a href="{{ url_for('create_package') }}" class="btn btn-success">Create New Package</a>
             {% endif %}
         </div>
@@ -73,18 +73,23 @@
                         <td>{{ package.created_by }}</td>
                         <td>{{ package.created_at[:10] if package.created_at else '' }}</td>
                         <td>
-                            {% if session.get('permissions', {}).get('package_update', False) and (session.role == 'admin' or session.username in package.assigned_users) %}
-                            <a href="{{ url_for('edit_package', package_id=package_id) }}" class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;">Edit</a>
+                            {% if fresh_permissions.get('package_update', False) and (fresh_role == 'admin' or session.username in package.assigned_users) %}
+                                <a href="{{ url_for('edit_package', package_id=package_id) }}" 
+                                class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;">
+                                    Edit
+                                </a>
                             {% endif %}
-
-                            {% if session.get('permissions', {}).get('package_delete', False) %}
+                            
+                            {% if fresh_permissions.get('package_delete', False) %}
                             <a href="{{ url_for('delete_package', package_id=package_id) }}" 
                             class="btn btn-danger" 
                             style="font-size: 11px; padding: 4px 8px;"
-                            onclick="return confirm('Are you sure you want to delete this package?')">Delete</a>
+                            onclick="return confirm('Are you sure you want to delete this package?')">
+                                Delete
+                            </a>
                             {% endif %}
-
-                            {% if not session.get('permissions', {}).get('package_update', False) and not session.get('permissions', {}).get('package_delete', False) %}
+                            
+                            {% if not fresh_permissions.get('package_update', False) and not fresh_permissions.get('package_delete', False) %}
                             <span style="color: #999; font-size: 11px;">View Only</span>
                             {% endif %}
                         </td>
@@ -96,7 +101,7 @@
         {% else %}
         <div class="alert alert-info">
             <strong>No packages found.</strong>
-            {% if session.get('permissions', {}).get('package_create', False) or session.can_assign or session.role == 'admin' %}     
+            {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}    
             <a href="{{ url_for('create_package') }}">Create your first package</a>.
             {% else %}
             Contact an administrator to assign packages to you.

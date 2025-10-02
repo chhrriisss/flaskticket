@@ -9,13 +9,14 @@
     </div>
     <div class="card-body">
         <div class="alert alert-info">
-            <strong>Configure who can read, edit, and delete this field based on their role.</strong><br>
+            <strong>Configure who can read, edit, and delete this field.</strong><br>
         </div>
         
         <form method="POST">
             <table class="table">
                 <thead>
                     <tr>
+                        <th>User</th>
                         <th>Role</th>
                         <th style="text-align: center;">Read</th>
                         <th style="text-align: center;">Write (Edit)</th>
@@ -23,28 +24,40 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for role in roles %}
-                    <tr>
-                        <td><strong>{{ role|title }}</strong></td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="read_{{ role }}" value="1"
-                                   {% if current_permissions.get(role, {}).get('read', False) %}checked{% endif %}
-                                   {% if role == 'admin' %}checked disabled{% endif %}>
+                    {% for user in users %}
+                    <tr {% if user.role == 'admin' %}style="background-color: #f0f0f0;"{% endif %}>
+                        <td>
+                            <strong>{{ user.name }}</strong><br>
+                            <small style="color: #666;">{{ user.username }}</small>
+                        </td>
+                        <td>
+                            <span class="{% if user.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}">
+                                {{ user.role|title }}
+                            </span>
                         </td>
                         <td style="text-align: center;">
-                            <input type="checkbox" name="write_{{ role }}" value="1"
-                                   {% if current_permissions.get(role, {}).get('write', False) %}checked{% endif %}
-                                   {% if role == 'admin' %}checked disabled{% endif %}>
+                            <input type="checkbox" name="read_{{ user.username }}" value="1"
+                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('read', False) %}checked{% endif %}
+                                   {% if user.role == 'admin' %}disabled{% endif %}>
                         </td>
                         <td style="text-align: center;">
-                            <input type="checkbox" name="delete_{{ role }}" value="1"
-                                   {% if current_permissions.get(role, {}).get('delete', False) %}checked{% endif %}
-                                   {% if role == 'admin' %}checked disabled{% endif %}>
+                            <input type="checkbox" name="write_{{ user.username }}" value="1"
+                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('write', False) %}checked{% endif %}
+                                   {% if user.role == 'admin' %}disabled{% endif %}>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="delete_{{ user.username }}" value="1"
+                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('delete', False) %}checked{% endif %}
+                                   {% if user.role == 'admin' %}disabled{% endif %}>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            
+            <div class="alert alert-info">
+                <strong>Note:</strong> Admin users always have full permissions and cannot be modified.
+            </div>
             
             <div class="form-group text-right mt-3">
                 <a href="{{ url_for('admin_config') }}" class="btn btn-secondary">Cancel</a>

@@ -161,18 +161,26 @@ def inject_fresh_permissions():
         if not user:
             return {'fresh_role': None, 'fresh_permissions': {}, 'can_access_field': lambda f, a: False}
         
+        username = user.username
         user_role = user.role
         config = {'fields': get_all_field_configs()}
         
         def can_access_field(field_name, action='read'):
             """Check if current user can perform action on field"""
+            # Admin always has full access
             if user_role == 'admin':
                 return True
             
             field_config = config['fields'].get(field_name, {})
             field_permissions = field_config.get('permissions', {})
-            role_permissions = field_permissions.get(user_role, {})
             
+            # Check username-specific permissions first
+            user_permissions = field_permissions.get(username, {})
+            if user_permissions:
+                return user_permissions.get(action, False)
+            
+            # Fallback to role-based if no username-specific permissions exist
+            role_permissions = field_permissions.get(user_role, {})
             return role_permissions.get(action, False)
         
         return {
@@ -424,15 +432,17 @@ def update_field_config():
     )
     field.set_options([opt.strip() for opt in options if opt.strip()])
     
-    # Set default permissions for all roles
+    # Set default permissions - username-based for all users
     users = User.query.all()
-    roles = set(u.role for u in users)
     default_perms = {}
-    for role in roles:
-        if role == 'admin':
-            default_perms[role] = {'read': True, 'write': True, 'delete': True}
+    
+    for user in users:
+        if user.role == 'admin':
+            default_perms['admin'] = {'read': True, 'write': True, 'delete': True}
         else:
-            default_perms[role] = {'read': True, 'write': editable, 'delete': False}
+            # Each user gets individual permissions
+            default_perms[user.username] = {'read': True, 'write': editable, 'delete': False}
+    
     field.set_permissions(default_perms)
     
     db.session.add(field)
@@ -543,13 +553,19 @@ def edit_package(package_id):
             
             for field_name, field_config in config['fields'].items():
                 field_permissions = field_config.get('permissions', {})
-                role_permissions = field_permissions.get(user_role, {})
-                can_read = user_role == 'admin' or role_permissions.get('read', False)
+                
+                # NEW: Check username-specific permissions first
+                user_permissions = field_permissions.get(session['username'], {})
+                if not user_permissions:
+                    # Fallback to role-based if username not found
+                    user_permissions = field_permissions.get(user_role, {})
+                
+                can_read = user_role == 'admin' or user_permissions.get('read', False)
                 
                 if not can_read:
                     continue
                 
-                can_write = user_role == 'admin' or role_permissions.get('write', False)
+                can_write = user_role == 'admin' or user_permissions.get('write', False)
                 
                 if not can_write:
                     data_timeline[new_date][field_name] = latest_data.get(field_name, '')
@@ -563,8 +579,14 @@ def edit_package(package_id):
             for column_date in gantt_columns:
                 for field_name, field_config in config['fields'].items():
                     field_permissions = field_config.get('permissions', {})
-                    role_permissions = field_permissions.get(user_role, {})
-                    can_write = user_role == 'admin' or role_permissions.get('write', False)
+                    
+                    # NEW: Check username-specific permissions first
+                    user_permissions = field_permissions.get(session['username'], {})
+                    if not user_permissions:
+                        # Fallback to role-based
+                        user_permissions = field_permissions.get(user_role, {})
+                    
+                    can_write = user_role == 'admin' or user_permissions.get('write', False)
                     
                     if can_write:
                         form_field = f"{field_name}_{column_date}"
@@ -633,13 +655,20 @@ def delete_column(package_id, column_date):
     
     config = {'fields': get_all_field_configs()}
     
+
     # Check if user has delete permission for ALL fields
     if user_role != 'admin':
         can_delete_column = True
         for field_name, field_config in config['fields'].items():
             field_permissions = field_config.get('permissions', {})
-            role_permissions = field_permissions.get(user_role, {})
-            if not role_permissions.get('delete', False):
+            
+            # NEW: Check username-specific permissions first
+            user_permissions = field_permissions.get(session['username'], {})
+            if not user_permissions:
+                # Fallback to role-based
+                user_permissions = field_permissions.get(user_role, {})
+            
+            if not user_permissions.get('delete', False):
                 can_delete_column = False
                 break
         
@@ -694,15 +723,22 @@ def admin_permissions():
         # Update permissions for each user
         for user in users:
             if user.username != 'admin':
-                user.set_permissions({
+                new_permissions = {
                     'package_create': f'create_{user.username}' in request.form,
                     'package_read': f'read_{user.username}' in request.form,
                     'package_update': f'update_{user.username}' in request.form,
                     'package_delete': f'delete_{user.username}' in request.form
-                })
+                }
+                user.set_permissions(new_permissions)
+                
+                # THIS IS THE KEY: Update session if user is logged in elsewhere
+                # Check all active sessions (this is simplified - works for single user)
+                if user.username == session.get('username'):
+                    session['permissions'] = new_permissions
+                    session.modified = True
         
         db.session.commit()
-        flash('Permissions updated successfully')
+        flash('Permissions updated successfully. Changes apply immediately.')
         return redirect(url_for('admin_permissions'))
     
     users_dict = get_all_users()
@@ -718,16 +754,21 @@ def admin_field_permissions(field_name):
         return redirect(url_for('admin_config'))
     
     users = User.query.all()
-    roles = sorted(set(u.role for u in users))
     
     if request.method == 'POST':
         permissions = {}
-        for role in roles:
-            permissions[role] = {
-                'read': f'read_{role}' in request.form,
-                'write': f'write_{role}' in request.form,
-                'delete': f'delete_{role}' in request.form
-            }
+        
+        for user in users:
+            if user.role == 'admin':
+                # Admin always has all permissions
+                permissions['admin'] = {'read': True, 'write': True, 'delete': True}
+            else:
+                # Individual username-based permissions
+                permissions[user.username] = {
+                    'read': f'read_{user.username}' in request.form,
+                    'write': f'write_{user.username}' in request.form,
+                    'delete': f'delete_{user.username}' in request.form
+                }
         
         field.set_permissions(permissions)
         db.session.commit()
@@ -746,9 +787,44 @@ def admin_field_permissions(field_name):
     return render_template('admin_field_permissions.html', 
                          field_name=field_name,
                          field_config=field_config,
-                         roles=roles,
+                         users=users,
                          current_permissions=current_permissions)
+
+def migrate_field_permissions_to_username():
+    """Migrate role-based field permissions to username-based"""
+    with app.app_context():
+        fields = FieldConfig.query.all()
+        users = User.query.all()
+        
+        for field in fields:
+            current_perms = field.get_permissions()
+            new_perms = {}
+            
+            # Keep admin role-based
+            if 'admin' in current_perms:
+                new_perms['admin'] = current_perms['admin']
+            else:
+                new_perms['admin'] = {'read': True, 'write': True, 'delete': True}
+            
+            # Convert each user
+            for user in users:
+                if user.role != 'admin':
+                    # Check if username already exists
+                    if user.username in current_perms:
+                        new_perms[user.username] = current_perms[user.username]
+                    # Otherwise use role-based as template
+                    elif user.role in current_perms:
+                        new_perms[user.username] = current_perms[user.role].copy()
+                    # Default permissions
+                    else:
+                        new_perms[user.username] = {'read': True, 'write': field.editable, 'delete': False}
+            
+            field.set_permissions(new_perms)
+        
+        db.session.commit()
+        print("Field permissions migrated to username-based successfully!")
 
 if __name__ == '__main__':
     init_default_data()
+    migrate_field_permissions_to_username()
     app.run(debug=True)
