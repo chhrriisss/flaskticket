@@ -60,8 +60,57 @@ def get_all_packages():
         'assigned_users': p.get_assigned_users(),
         'gantt_columns': p.get_gantt_columns(),
         'data_timeline': p.get_data_timeline(),
-        'data': p.get_data()
+        'data': p.get_data(),
+        'user_permissions': p.get_user_permissions()  # NEW
     } for p in packages}
+
+def can_user_perform_package_action(username, user_role, package, action):
+    """
+    Check if user can perform action on specific package
+    action: 'read', 'update', 'delete'
+    Returns: (can_perform, reason)
+    """
+    # Admin always can
+    if user_role == 'admin':
+        return True, "Admin access"
+    
+    # Check if assigned to package
+    if username not in package.get_assigned_users():
+        return False, "Not assigned to package"
+    
+    # Check package-specific permission (overrides global)
+    pkg_user_perms = package.get_user_permissions()
+    user_pkg_perms = pkg_user_perms.get(username, {})
+    
+    # Map action to permission key
+    action_map = {
+        'read': 'can_view',
+        'update': 'can_edit',
+        'delete': 'can_delete'
+    }
+    
+    perm_key = action_map.get(action)
+    if perm_key and perm_key in user_pkg_perms:
+        # Package-specific permission exists, use it
+        return user_pkg_perms[perm_key], f"Package-specific: {user_pkg_perms[perm_key]}"
+    
+    # Fall back to global user permissions
+    # Note: This requires accessing user from database
+    user = db.session.get(User, username)
+    if not user:
+        return False, "User not found"
+    
+    global_perms = user.get_permissions()
+    global_perm_map = {
+        'read': 'package_read',
+        'update': 'package_update',
+        'delete': 'package_delete'
+    }
+    
+    global_key = global_perm_map.get(action)
+    can_perform = global_perms.get(global_key, False)
+    
+    return can_perform, f"Global permission: {can_perform}"
 
 def init_default_data():
     """Initialize default data in database"""
@@ -507,7 +556,6 @@ def create_package():
 
 @app.route('/packages/<package_id>/edit', methods=['GET', 'POST'])
 @login_required
-@permission_required('package_update')
 def edit_package(package_id):
     package = db.session.get(Package, package_id)
     
@@ -517,10 +565,13 @@ def edit_package(package_id):
     
     user = db.session.get(User, session['username'])
     user_role = user.role
+    username = session['username']
     
-    # Check if user can access this package
-    if user_role != 'admin' and session['username'] not in package.get_assigned_users():
-        flash('Access denied: Package not assigned to you')
+    # NEW: Check package-specific permissions
+    can_edit, reason = can_user_perform_package_action(username, user_role, package, 'update')
+    
+    if not can_edit:
+        flash(f'Access denied: {reason}')
         return redirect(url_for('dashboard'))
     
     config = {'fields': get_all_field_configs()}
@@ -554,8 +605,8 @@ def edit_package(package_id):
             for field_name, field_config in config['fields'].items():
                 field_permissions = field_config.get('permissions', {})
                 
-                # NEW: Check username-specific permissions first
-                user_permissions = field_permissions.get(session['username'], {})
+                # Check username-specific permissions first
+                user_permissions = field_permissions.get(username, {})
                 if not user_permissions:
                     # Fallback to role-based if username not found
                     user_permissions = field_permissions.get(user_role, {})
@@ -580,8 +631,8 @@ def edit_package(package_id):
                 for field_name, field_config in config['fields'].items():
                     field_permissions = field_config.get('permissions', {})
                     
-                    # NEW: Check username-specific permissions first
-                    user_permissions = field_permissions.get(session['username'], {})
+                    # Check username-specific permissions first
+                    user_permissions = field_permissions.get(username, {})
                     if not user_permissions:
                         # Fallback to role-based
                         user_permissions = field_permissions.get(user_role, {})
@@ -595,9 +646,20 @@ def edit_package(package_id):
                         else:
                             data_timeline[column_date][field_name] = request.form.get(form_field, '')
             
-            # Admin can update assigned users
+            # NEW: Admin can update package-specific permissions
             if user_role == 'admin':
+                # Update assigned users
                 package.set_assigned_users(request.form.getlist('assigned_users'))
+                
+                # Update package-specific permissions for each assigned user
+                pkg_perms = {}
+                for assigned_user in request.form.getlist('assigned_users'):
+                    pkg_perms[assigned_user] = {
+                        'can_view': True,  # Always true if assigned
+                        'can_edit': f'can_edit_{assigned_user}' in request.form,
+                        'can_delete': f'can_delete_{assigned_user}' in request.form
+                    }
+                package.set_user_permissions(pkg_perms)
         
         # Update package
         package.set_gantt_columns(gantt_columns)
@@ -609,7 +671,7 @@ def edit_package(package_id):
             package.set_data(data_timeline[latest_column])
         
         package.updated_at = datetime.now()
-        package.updated_by = session['username']
+        package.updated_by = username
         
         db.session.commit()
         
@@ -628,6 +690,7 @@ def edit_package(package_id):
         'updated_by': package.updated_by,
         'updated_at': package.updated_at.isoformat() if package.updated_at else None,
         'assigned_users': package.get_assigned_users(),
+        'user_permissions': package.get_user_permissions(),  # NEW: Include for template
         'gantt_columns': gantt_columns,
         'data_timeline': data_timeline,
         'data': package.get_data()
@@ -704,14 +767,27 @@ def delete_column(package_id, column_date):
     return redirect(url_for('edit_package', package_id=package_id))
 
 @app.route('/packages/<package_id>/delete')
-@admin_required
-@permission_required('package_create')
+@login_required
 def delete_package(package_id):
     package = db.session.get(Package, package_id)
-    if package:
-        db.session.delete(package)
-        db.session.commit()
-        flash('Package deleted successfully')
+    
+    if not package:
+        flash('Package not found')
+        return redirect(url_for('dashboard'))
+    
+    user_role = session['role']
+    username = session['username']
+    
+    # Check package-specific delete permission
+    can_delete, reason = can_user_perform_package_action(username, user_role, package, 'delete')
+    
+    if not can_delete:
+        flash(f'Permission denied: {reason}')
+        return redirect(url_for('dashboard'))
+    
+    db.session.delete(package)
+    db.session.commit()
+    flash('Package deleted successfully')
     return redirect(url_for('dashboard'))
 
 @app.route('/admin/permissions', methods=['GET', 'POST'])

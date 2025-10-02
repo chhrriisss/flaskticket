@@ -13,6 +13,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     can_assign = db.Column(db.Boolean, default=False)
     permissions = db.Column(db.Text)  # Store as JSON string
+
     
     def get_permissions(self):
         return json.loads(self.permissions) if self.permissions else {}
@@ -54,6 +55,7 @@ class Package(db.Model):
     gantt_columns = db.Column(db.Text)  # Store as JSON string
     data_timeline = db.Column(db.Text)  # Store as JSON string
     data = db.Column(db.Text)  # Store as JSON string (legacy)
+    user_permissions = db.Column(db.Text) 
     
     def get_assigned_users(self):
         return json.loads(self.assigned_users) if self.assigned_users else []
@@ -78,3 +80,9 @@ class Package(db.Model):
     
     def set_data(self, pkg_data):
         self.data = json.dumps(pkg_data)
+
+    def get_user_permissions(self):
+        return json.loads(self.user_permissions) if self.user_permissions else {}
+    
+    def set_user_permissions(self, perms):
+        self.user_permissions = json.dumps(perms)
