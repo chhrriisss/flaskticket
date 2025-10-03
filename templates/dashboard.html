@@ -76,16 +76,16 @@
                             {% set pkg_perms = package.user_permissions.get(session.username, {}) %}
                             {% set can_edit = fresh_role == 'admin' %}
                             {% set can_delete = fresh_role == 'admin' %}
-                            
+
                             {% if fresh_role != 'admin' %}
-                                <!-- Check package-specific permissions first -->
-                                {% if 'can_edit' in pkg_perms %}
+                                <!-- Check package-specific permissions first, but ONLY if explicitly set -->
+                                {% if pkg_perms and 'can_edit' in pkg_perms %}
                                     {% set can_edit = pkg_perms.can_edit %}
                                 {% else %}
                                     {% set can_edit = fresh_permissions.get('package_update', False) %}
                                 {% endif %}
                                 
-                                {% if 'can_delete' in pkg_perms %}
+                                {% if pkg_perms and 'can_delete' in pkg_perms %}
                                     {% set can_delete = pkg_perms.can_delete %}
                                 {% else %}
                                     {% set can_delete = fresh_permissions.get('package_delete', False) %}

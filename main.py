@@ -651,14 +651,22 @@ def edit_package(package_id):
                 # Update assigned users
                 package.set_assigned_users(request.form.getlist('assigned_users'))
                 
-                # Update package-specific permissions for each assigned user
+# Update package-specific permissions for each assigned user
                 pkg_perms = {}
                 for assigned_user in request.form.getlist('assigned_users'):
-                    pkg_perms[assigned_user] = {
-                        'can_view': True,  # Always true if assigned
-                        'can_edit': f'can_edit_{assigned_user}' in request.form,
-                        'can_delete': f'can_delete_{assigned_user}' in request.form
-                    }
+                    # Only store package-specific permissions if explicitly checked
+                    user_pkg_perm = {}
+                    
+                    if f'can_edit_{assigned_user}' in request.form:
+                        user_pkg_perm['can_edit'] = True
+                    
+                    if f'can_delete_{assigned_user}' in request.form:
+                        user_pkg_perm['can_delete'] = True
+                    
+                    # Only save if there are actual overrides
+                    if user_pkg_perm:
+                        pkg_perms[assigned_user] = user_pkg_perm
+
                 package.set_user_permissions(pkg_perms)
         
         # Update package
