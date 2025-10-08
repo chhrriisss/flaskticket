@@ -113,13 +113,22 @@
                     <div>
                         <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Packages Dashboard</h2>
                     </div>
-
                 </div>
-                {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
-                <a href="{{ url_for('create_package') }}" class="btn btn-success" style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3); text-decoration: none;">
-                    + Create Package
-                </a>
-                {% endif %}
+                <div style="display: flex; gap: 10px;">
+                    <!-- Export Buttons -->
+                    <a href="{{ url_for('export_excel', filter_user=request.args.get('filter_user', 'all')) }}" 
+                    class="btn btn-primary" 
+                    style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3); text-decoration: none;">
+                         Export Excel
+                    </a>
+                    {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
+                    <a href="{{ url_for('create_package') }}" 
+                    class="btn btn-success" 
+                    style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3); text-decoration: none;">
+                        + Create Package
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
 <!-- User Filter Section - ADD THIS ENTIRE BLOCK -->

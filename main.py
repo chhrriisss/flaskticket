@@ -1,7 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 import json
 import os
 from datetime import datetime
+from io import BytesIO
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 from functools import wraps
 from models import db, User, FieldConfig, Package
 from flask_mail import Mail, Message
@@ -1072,6 +1077,151 @@ def migrate_field_permissions_to_username():
         
         db.session.commit()
         print("Field permissions migrated to username-based successfully!")
+
+@app.route('/export/excel')
+@login_required
+def export_excel():
+    """Export packages to Excel"""
+    packages = get_all_packages()
+    config = {'fields': get_all_field_configs()}
+
+    filter_user = request.args.get('filter_user', 'all')
+    
+    # Filter packages based on user role
+    if session['role'] != 'admin':
+        user_packages = {}
+        for pkg_id, pkg_data in packages.items():
+            if session['username'] in pkg_data.get('assigned_users', []):
+                user_packages[pkg_id] = pkg_data
+        packages = user_packages
+    else:
+        # Admin users: can filter by specific user
+        if filter_user != 'all':
+            filtered_packages = {}
+            for pkg_id, pkg_data in packages.items():
+                if filter_user in pkg_data.get('assigned_users', []):
+                    filtered_packages[pkg_id] = pkg_data
+            packages = filtered_packages
+    
+    # Create Excel workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Packages"
+    
+    # Define headers
+    headers = ['Package ID', 'Status', 'Assigned Users', 'Created By', 'Created Date']
+    
+    # Add custom field headers
+    for field_name, field_config in config['fields'].items():
+        if field_name.upper() not in ['STATUS']:
+            headers.append(field_config['label'])
+    
+    # Style for headers
+    header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True, size=12)
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # Write headers
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = thin_border
+    
+    # Write data
+    row_num = 2
+    for package_id, package in packages.items():
+        # Get latest data
+        if package.get('data_timeline'):
+            latest_column = package['gantt_columns'][-1]
+            latest_data = package['data_timeline'][latest_column]
+        else:
+            latest_data = package.get('data', {})
+        
+        # Package ID
+        ws.cell(row=row_num, column=1, value=package_id).border = thin_border
+        
+        # Status
+        status_value = latest_data.get('STATUS', latest_data.get('status', '-'))
+        status_cell = ws.cell(row=row_num, column=2, value=status_value)
+        status_cell.border = thin_border
+        
+        # Color code status
+        if str(status_value).lower() == 'ongoing':
+            status_cell.fill = PatternFill(start_color="28A745", end_color="28A745", fill_type="solid")
+            status_cell.font = Font(color="FFFFFF", bold=True)
+        elif str(status_value).lower() == 'hold':
+            status_cell.fill = PatternFill(start_color="FFC107", end_color="FFC107", fill_type="solid")
+            status_cell.font = Font(bold=True)
+        elif str(status_value).lower() == 'completed':
+            status_cell.fill = PatternFill(start_color="17A2B8", end_color="17A2B8", fill_type="solid")
+            status_cell.font = Font(color="FFFFFF", bold=True)
+        
+        # Assigned Users
+        assigned = ', '.join(package.get('assigned_users', []))
+        ws.cell(row=row_num, column=3, value=assigned).border = thin_border
+        
+        # Created By
+        ws.cell(row=row_num, column=4, value=package.get('created_by', '-')).border = thin_border
+        
+        # Created Date
+        created_at = package.get('created_at', '-')
+        if created_at and created_at != '-':
+            created_at = created_at[:10]
+        ws.cell(row=row_num, column=5, value=created_at).border = thin_border
+        
+        # Custom fields
+        col_num = 6
+        for field_name, field_config in config['fields'].items():
+            if field_name.upper() not in ['STATUS']:
+                field_value = latest_data.get(field_name, '-')
+                
+                # Handle multiselect
+                if isinstance(field_value, list):
+                    field_value = ', '.join(field_value)
+                
+                ws.cell(row=row_num, column=col_num, value=field_value).border = thin_border
+                col_num += 1
+        
+        row_num += 1
+    
+    # Auto-adjust column widths
+    for col_num in range(1, len(headers) + 1):
+        column_letter = get_column_letter(col_num)
+        max_length = 0
+        for cell in ws[column_letter]:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Freeze header row
+    ws.freeze_panes = 'A2'
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    filename = f"packages_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
 
 if __name__ == '__main__':
     init_default_data()
