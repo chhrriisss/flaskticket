@@ -3,9 +3,39 @@
 {% block title %}Field Permissions - {{ field_name }}{% endblock %}
 
 {% block content %}
+
 <div class="card">
-    <div class="card-header">
-        <h2>Field Permissions: {{ field_config.label }} ({{ field_name }})</h2>
+    <div style="background: #f8f9fa; border-left: 3px solid #0066cc; padding: 15px 20px; margin-top: 20px; border-radius: 4px;">
+        <div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap; font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Field Name:</span>
+                <strong style="color: #2c3e50;">{{ field_name }}</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Label:</span>
+                <strong style="color: #2c3e50;">{{ field_config.label }}</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Type:</span>
+                <strong style="color: #2c3e50;">{{ field_config.type|title }}</strong>
+            </div>
+            {% if field_config.get('options') %}
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Options:</span>
+                <strong style="color: #2c3e50;">{{ field_config.options|join(', ') }}</strong>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Field Configuration</h3>
+        </div>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
@@ -13,80 +43,83 @@
         </div>
         
         <form method="POST">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th style="text-align: center;">Read</th>
-                        <th style="text-align: center;">Write (Edit)</th>
-                        <th style="text-align: center;">Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr {% if user.role == 'admin' %}style="background-color: #f0f0f0;"{% endif %}>
-                        <td>
-                            <strong>{{ user.name }}</strong><br>
-                            <small style="color: #666;">{{ user.username }}</small>
-                        </td>
-                        <td>
-                            <span class="{% if user.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}">
-                                {{ user.role|title }}
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="read_{{ user.username }}" value="1"
-                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('read', False) %}checked{% endif %}
-                                   {% if user.role == 'admin' %}disabled{% endif %}>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="write_{{ user.username }}" value="1"
-                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('write', False) %}checked{% endif %}
-                                   {% if user.role == 'admin' %}disabled{% endif %}>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="delete_{{ user.username }}" value="1"
-                                   {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('delete', False) %}checked{% endif %}
-                                   {% if user.role == 'admin' %}disabled{% endif %}>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            <div class="alert alert-info">
-                <strong>Note:</strong> Admin users always have full permissions and cannot be modified.
+            <div style="overflow-x: auto;">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">User</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Role</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                    <span style="font-size: 20px;"></span>
+                                    <span>Read</span>
+                                </div>
+                            </th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                    <span style="font-size: 20px;"></span>
+                                    <span>Write</span>
+                                </div>
+                            </th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                    <span style="font-size: 20px;"></span>
+                                    <span>Delete</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr {% if user.role == 'admin' %}style="background-color: #f8f9fa; border-left: 4px solid #17a2b8;"{% else %}style="border-left: 4px solid transparent;"{% endif %}>
+                            <td style="padding: 20px 16px; vertical-align: middle;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <strong style="font-size: 14px; color: #2c3e50;">{{ user.name }}</strong>
+                                    <small style="color: #6c757d; font-size: 12px;">@{{ user.username }}</small>
+                                </div>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <span class="{% if user.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}" 
+                                    style="padding: 6px 12px; font-size: 11px; font-weight: 600;">
+                                    {{ user.role|title }}
+                                </span>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="read_{{ user.username }}" value="1"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('read', False) %}checked{% endif %}
+                                        {% if user.role == 'admin' %}disabled{% endif %}>
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="write_{{ user.username }}" value="1"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('write', False) %}checked{% endif %}
+                                        {% if user.role == 'admin' %}disabled{% endif %}>
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="delete_{{ user.username }}" value="1"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('delete', False) %}checked{% endif %}
+                                        {% if user.role == 'admin' %}disabled{% endif %}>
+                                </label>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
             
-            <div class="form-group text-right mt-3">
-                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Permissions</button>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: right;">
+                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary" style="margin-right: 10px;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600;">Save Permissions</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h3>Current Field Configuration</h3>
-    </div>
-    <div class="card-body">
-        <div class="form-row">
-            <div class="form-col">
-                <strong>Field Name:</strong> <code>{{ field_name }}</code><br>
-                <strong>Label:</strong> {{ field_config.label }}<br>
-                <strong>Type:</strong> <span class="status-ongoing">{{ field_config.type|title }}</span>
-            </div>
-            <div class="form-col">
-                <strong>Options:</strong> 
-                {% if field_config.get('options') %}
-                {{ field_config.options|join(', ') }}
-                {% else %}
-                <span style="color: #999;">None</span>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

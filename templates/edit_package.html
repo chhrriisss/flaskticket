@@ -5,26 +5,39 @@
 {% block content %}
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Edit Package: {{ package.id }}</h2>
-            <div>
-                <form method="POST" style="display: inline;">
-                    <input type="hidden" name="action" value="add_column">
-                    <button type="submit" class="btn btn-success" style="font-size: 12px; padding: 6px 12px;">
-                        + Add Column
-                    </button>
-                </form>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📦</span>
+                <div>
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Edit Package</h2>
+                    <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.85);">ID: {{ package.id }}</p>
+                </div>
             </div>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="add_column">
+                <button type="submit" class="btn btn-success" style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);">
+                    + Add Column
+                </button>
+            </form>
         </div>
     </div>
     <div class="card-body">
-        <!-- Package Info -->
-        <div class="alert alert-info" style="margin-bottom: 20px;">
-            <strong>Package Info:</strong><br>
-            Created by: {{ package.created_by }} on {{ package.created_at[:10] if package.created_at else 'Unknown' }}<br>
+<!-- Package Info -->
+        <div style="background: #f8f9fa; border-left: 3px solid #0066cc; padding: 10px 15px; margin-bottom: 15px; border-radius: 4px; display: flex; gap: 30px; align-items: center; font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Created:</span>
+                <strong style="color: #2c3e50;">{{ package.created_by }}</strong>
+                <span style="color: #6c757d;">•</span>
+                <span style="color: #6c757d;">{{ package.created_at[:10] if package.created_at else 'Unknown' }}</span>
+            </div>
             {% if package.updated_at %}
-            Last updated by: {{ package.updated_by }} on {{ package.updated_at[:10] }}
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #6c757d; font-weight: 500;">Updated:</span>
+                <strong style="color: #2c3e50;">{{ package.updated_by }}</strong>
+                <span style="color: #6c757d;">•</span>
+                <span style="color: #6c757d;">{{ package.updated_at[:10] }}</span>
+            </div>
             {% endif %}
         </div>
 
@@ -32,47 +45,58 @@
         {% if session.role == 'admin' %}
         <form method="POST" id="mainForm">
             <input type="hidden" name="action" value="update">
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label><strong>Assign Users & Package Permissions:</strong></label>
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background-color: #f9f9f9;">
-                    {% for username, user_data in users.items() %}
-                        {% if username != 'admin' %}
-                        <div style="display: flex; align-items: center; margin-bottom: 10px; padding: 8px; background-color: white; border-radius: 3px;">
-                            <input type="checkbox" 
-                                name="assigned_users" 
-                                id="assign_{{ username }}" 
-                                value="{{ username }}" 
-                                {% if username in package.assigned_users %}checked{% endif %}
-                                style="margin-right: 10px;">
-                            <label for="assign_{{ username }}" style="margin: 0; min-width: 150px; font-weight: bold;">
-                                {{ user_data.name }} ({{ username }})
-                            </label>
-                            
-                            <!-- Package-specific permissions -->
-                            {% set user_pkg_perms = package.user_permissions.get(username, {}) %}
-                            <div style="display: flex; gap: 15px; margin-left: 20px;">
-                                <label style="margin: 0; font-weight: normal;">
-                                    <input type="checkbox" 
-                                        name="can_edit_{{ username }}" 
-                                        {% if user_pkg_perms.get('can_edit', False) %}checked{% endif %}>
-                                    Can Edit
+            
+            <fieldset class="field-group" style="background: linear-gradient(135deg, #f8fcff 0%, #e8f4ff 100%); border: 2px solid #d6ebff; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
+                <legend style="color: #0066cc; font-size: 15px; font-weight: 600; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;"></span> Assign Users & Permissions
+                </legend>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <div style="border: 2px solid #e0e0e0; padding: 12px; border-radius: 6px; background-color: white; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+                        {% for username, user_data in users.items() %}
+                            {% if username != 'admin' %}
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 10px 12px; background: white; border-radius: 6px; border: 2px solid #e9ecef; transition: all 0.2s;" 
+                                onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 2px 8px rgba(0,102,204,0.1)'; this.style.transform='translateX(2px)'" 
+                                onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
+                                <input type="checkbox" 
+                                    name="assigned_users" 
+                                    id="assign_{{ username }}" 
+                                    value="{{ username }}" 
+                                    {% if username in package.assigned_users %}checked{% endif %}
+                                    style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer; accent-color: #0066cc;">
+                                <label for="assign_{{ username }}" style="margin: 0; min-width: 150px; font-weight: 600; cursor: pointer; color: #2c3e50;">
+                                    <span style="color: #0066cc;">{{ user_data.name }}</span>
+                                    <span style="color: #6c757d; font-size: 11px; font-weight: 400;"> @{{ username }}</span>
                                 </label>
-                                <label style="margin: 0; font-weight: normal;">
-                                    <input type="checkbox" 
-                                        name="can_delete_{{ username }}" 
-                                        {% if user_pkg_perms.get('can_delete', False) %}checked{% endif %}>
-                                    Can Delete
-                                </label>
+                                
+                                <!-- Package-specific permissions -->
+                                {% set user_pkg_perms = package.user_permissions.get(username, {}) %}
+                                <div style="display: flex; gap: 15px; margin-left: auto;">
+                                    <label style="margin: 0; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: #f8f9fa; border-radius: 4px; font-size: 11px; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#e8f4ff'"
+                                        onmouseout="this.style.background='#f8f9fa'">
+                                        <input type="checkbox" 
+                                            name="can_edit_{{ username }}" 
+                                            {% if user_pkg_perms.get('can_edit', False) %}checked{% endif %}
+                                            style="width: 16px; height: 16px; cursor: pointer; accent-color: #28a745;">
+                                        <span style="color: #2c3e50;">Edit</span>
+                                    </label>
+                                    <label style="margin: 0; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: #f8f9fa; border-radius: 4px; font-size: 11px; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#ffe8e8'"
+                                        onmouseout="this.style.background='#f8f9fa'">
+                                        <input type="checkbox" 
+                                            name="can_delete_{{ username }}" 
+                                            {% if user_pkg_perms.get('can_delete', False) %}checked{% endif %}
+                                            style="width: 16px; height: 16px; cursor: pointer; accent-color: #dc3545;">
+                                        <span style="color: #2c3e50;"> Delete</span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                <small style="color: #666; font-size: 12px; display: block; margin-top: 8px;">
-                    <strong>Note:</strong> Package permissions override global user permissions. 
-                    Leave unchecked to use global settings.
-                </small>
-            </div>
+                            {% endif %}
+                        {% endfor %}
+                    <div style="margin-top: 12px; padding: 10px 12px; background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%); border-left: 3px solid #ffc107; border-radius: 4px; font-size: 11px; color: #856404;">
+                        <strong style="font-size: 12px;"> Note:</strong> Package-specific permissions override global user permissions. Leave unchecked to use global settings.
+                    </div>
+            </fieldset>
         {% else %}
         <form method="POST" id="mainForm">
             <input type="hidden" name="action" value="update">
@@ -87,7 +111,17 @@
                 {% for column_date in package.gantt_columns %}
                 <th class="gantt-column-header">
                     <div class="column-header-content">
-                        <div class="column-date">{{ column_date }}</div>
+                        <div class="column-date">
+                            {% set date_parts = column_date.split('_') %}
+                            {% if date_parts|length > 1 %}
+                                {# Format: 2025-10-06_10-23-57 #}
+                                <span class="date-main">{{ date_parts[0] }}</span>
+                                <span class="date-time">{{ date_parts[1].replace('-', ':') }}</span>
+                            {% else %}
+                                {# Format: 2025-10-06 #}
+                                <span class="date-main">{{ column_date }}</span>
+                            {% endif %}
+                        </div>
                         {% if package.gantt_columns|length > 1 %}
                             {% set user_can_delete_columns = fresh_role == 'admin' %}
                             {% if fresh_role != 'admin' %}
@@ -133,7 +167,7 @@
                         <textarea name="{{ form_field_name }}" class="gantt-input gantt-textarea" 
                                   {% if not is_editable %}readonly{% endif %}>{{ field_value }}</textarea>
                         {% else %}
-                        <input type="text" name="{{ form_field_name }}" class="gantt-input" 
+                        <input type="text" name="{{ form_field_name }}" class="gantt-input " 
                                value="{{ field_value }}" {% if not is_editable %}readonly{% endif %}>
                         {% endif %}
                     
@@ -217,14 +251,17 @@
 <style>
 .gantt-container {
     overflow-x: auto;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    margin: 15px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: white;
 }
 
 .gantt-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     min-width: 800px;
     font-size: 12px;
 }
@@ -234,6 +271,7 @@
     border: 1px solid #ddd;
     vertical-align: top;
     position: relative;
+    line-height: 1.3;
 }
 
 .field-label-column {
@@ -248,13 +286,16 @@
 }
 
 .gantt-column-header {
-    background-color: #e9ecef;
+    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+    color: white;
+    border-bottom: 3px solid #004080;
     min-width: 200px;
     width: 200px;
-    padding: 8px;
+    padding: 8px 10px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .column-header-content {
@@ -264,9 +305,25 @@
 }
 
 .column-date {
-    font-size: 11px;
-    color: #0066cc;
-    word-break: break-all;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10px;
+    color: white;
+    line-height: 1.2;
+}
+
+.date-main {
+    font-weight: 700;
+    font-size: 12px;
+    color: white;
+    letter-spacing: 0.3px;
+}
+
+.date-time {
+    font-size: 10px;
+    color: rgba(255,255,255,0.95);
+    font-weight: 500;
 }
 
 .delete-column-btn {
@@ -284,15 +341,17 @@
 }
 
 .field-label {
-    background-color: #f8f9fa;
-    padding: 10px;
-    font-weight: bold;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 8px 10px;
+    font-weight: 600;
     font-size: 12px;
     position: sticky;
     left: 0;
     z-index: 5;
     width: 200px;
     min-width: 200px;
+    border-right: 3px solid #dee2e6;
+    color: #2c3e50;
 }
 
 .readonly-indicator {
@@ -303,29 +362,38 @@
 }
 
 .gantt-cell {
-    padding: 8px;
+    padding: 6px 8px;
     min-width: 200px;
     width: 200px;
     vertical-align: middle;
+    background: white;
+    border: 1px solid #e9ecef;
 }
 
 .gantt-cell.readonly {
-    background-color: #f9f9f9;
+    background: repeating-linear-gradient(
+        45deg,
+        #fafafa,
+        #fafafa 10px,
+        #f5f5f5 10px,
+        #f5f5f5 20px
+    );
 }
-
 .gantt-input {
     width: 100%;
-    border: 1px solid #ccc;
-    padding: 6px;
+    border: 2px solid #e0e0e0;
+    padding: 6px 8px;
     font-size: 11px;
-    border-radius: 3px;
+    border-radius: 4px;
     background: white;
+    transition: all 0.2s ease;
 }
 
 .gantt-input:focus {
     outline: none;
     border-color: #0066cc;
-    box-shadow: 0 0 3px rgba(0, 102, 204, 0.3);
+    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.15);
+    background: #f8fcff;
 }
 
 .gantt-input:disabled,
@@ -336,22 +404,35 @@
 }
 
 .gantt-textarea {
-    min-height: 60px;
+    min-height: 40px;
     resize: vertical;
 }
 
 .gantt-multiselect {
-    height: 80px;
+    height: 60px;
 }
 
 .gantt-row:nth-child(even) {
     background-color: rgba(248, 249, 250, 0.5);
 }
 
-.gantt-row:hover {
-    background-color: rgba(0, 102, 204, 0.05);
+.gantt-row {
+    transition: all 0.2s ease;
 }
 
+.gantt-row:hover {
+    background-color: rgba(0, 102, 204, 0.04);
+}
+
+.gantt-row:hover .field-label {
+    background: linear-gradient(135deg, #e8f4ff 0%, #d6ebff 100%);
+    color: #0052a3;
+    font-weight: 700;
+}
+
+.gantt-row:hover .gantt-cell {
+    background: rgba(0, 102, 204, 0.02);
+}
 .form-actions {
     margin-top: 20px;
     padding-top: 20px;
@@ -432,11 +513,11 @@ document.addEventListener('DOMContentLoaded', function() {
     textareas.forEach(function(textarea) {
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.max(60, this.scrollHeight) + 'px';
+            this.style.height = Math.max(40, this.scrollHeight) + 'px';
         });
         
         // Initial resize
-        textarea.style.height = Math.max(60, textarea.scrollHeight) + 'px';
+        textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px'; 
     });
     
     // Highlight changes

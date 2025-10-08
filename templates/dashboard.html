@@ -3,82 +3,251 @@
 {% block title %}Dashboard - Ticketing Tool{% endblock %}
 
 {% block content %}
+<!-- Quick Stats at the top (Admin only) -->
+{% if session.role == 'admin' %}
 <div class="card">
-    <div class="card-header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Packages Dashboard</h2>
-            {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
-            <a href="{{ url_for('create_package') }}" class="btn btn-success">Create New Package</a>
-            {% endif %}
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Status</h3>
         </div>
     </div>
     <div class="card-body">
+        {# Find the status field dynamically #}
+        {% set status_field = namespace(name=None) %}
+        {% for field_name, field_config in config.fields.items() %}
+            {% if field_name.upper() == 'STATUS' or field_config.label.upper() == 'STATUS' %}
+                {% set status_field.name = field_name %}
+            {% endif %}
+        {% endfor %}
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ packages|length }}</div>
+                <div class="stat-label">Total Packages</div>
+            </div>
+            
+            {% if status_field.name %}
+                <div class="stat-card stat-ongoing">
+                    <div class="stat-value">
+                        {% set ongoing_count = 0 %}
+                        {% for pkg in packages.values() %}
+                            {% if pkg.data_timeline %}
+                                {% set latest_col = pkg.gantt_columns[-1] %}
+                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'ongoing' %}
+                                    {% set ongoing_count = ongoing_count + 1 %}
+                                {% endif %}
+                            {% else %}
+                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'ongoing' %}
+                                    {% set ongoing_count = ongoing_count + 1 %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ ongoing_count }}
+                    </div>
+                    <div class="stat-label">Ongoing</div>
+                </div>
+                
+                <div class="stat-card stat-hold">
+                    <div class="stat-value">
+                        {% set hold_count = 0 %}
+                        {% for pkg in packages.values() %}
+                            {% if pkg.data_timeline %}
+                                {% set latest_col = pkg.gantt_columns[-1] %}
+                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'hold' %}
+                                    {% set hold_count = hold_count + 1 %}
+                                {% endif %}
+                            {% else %}
+                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'hold' %}
+                                    {% set hold_count = hold_count + 1 %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ hold_count }}
+                    </div>
+                    <div class="stat-label">On Hold</div>
+                </div>
+                
+                <div class="stat-card stat-completed">
+                    <div class="stat-value">
+                        {% set completed_count = 0 %}
+                        {% for pkg in packages.values() %}
+                            {% if pkg.data_timeline %}
+                                {% set latest_col = pkg.gantt_columns[-1] %}
+                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'completed' %}
+                                    {% set completed_count = completed_count + 1 %}
+                                {% endif %}
+                            {% else %}
+                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
+                                {% if status_val == 'completed' %}
+                                    {% set completed_count = completed_count + 1 %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ completed_count }}
+                    </div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            {% else %}
+                <div class="stat-card" style="grid-column: span 3; background-color: #fff3cd; border: 2px solid #ffc107;">
+                    <div class="stat-value" style="font-size: 14px; color: #856404;">
+                        ⚠️ No Status Field Found
+                    </div>
+                    <div class="stat-label" style="color: #856404;">Add a field named "STATUS" in Field Configuration</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Packages Table -->
+<div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Packages Dashboard</h2>
+                    </div>
+
+                </div>
+                {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
+                <a href="{{ url_for('create_package') }}" class="btn btn-success" style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3); text-decoration: none;">
+                    + Create Package
+                </a>
+                {% endif %}
+            </div>
+        </div>
+<!-- User Filter Section - ADD THIS ENTIRE BLOCK -->
+        {% if session.role == 'admin' %}
+        <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+            <form method="GET" action="{{ url_for('dashboard') }}" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <label style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0;">
+                    <span style="margin-right: 8px;"></span>Filter by User:
+                </label>
+                <select name="filter_user" 
+                        class="form-control" 
+                        style="width: auto; min-width: 250px; padding: 8px 12px; font-size: 13px; border: 2px solid #e0e0e0; border-radius: 4px;" 
+                        onchange="this.form.submit()">
+                    <option value="all" {% if request.args.get('filter_user', 'all') == 'all' %}selected{% endif %}>
+                        All Packages (All Users)
+                    </option>
+                    {% for username, user_data in users.items() %}
+                        {% if username != 'admin' %}
+                        <option value="{{ username }}" 
+                                {% if request.args.get('filter_user') == username %}selected{% endif %}>
+                             {{ user_data.name }} (@{{ username }})
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if request.args.get('filter_user') and request.args.get('filter_user') != 'all' %}
+                <a href="{{ url_for('dashboard') }}" 
+                class="btn btn-secondary" 
+                style="padding: 6px 14px; font-size: 12px; text-decoration: none;">
+                    ✕ Clear Filter
+                </a>
+                <span style="font-size: 12px; color: #6c757d; margin-left: 10px;">
+                    Showing packages assigned to: <strong>{{ users[request.args.get('filter_user')].name }}</strong>
+                </span>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+
+    <div class="card-body">
         {% if packages %}
-        <div style="overflow-x: auto;">
-            <table class="table">
+        <div class="table-container">
+            <table class="table dashboard-table">
                 <thead>
                     <tr>
                         <th>Package ID</th>
+                        <th>Status</th>
                         {% for field_name, field_config in config.fields.items() %}
+                        {% if field_name not in ['STATUS', 'status'] %}
                         <th>{{ field_config.label }}</th>
+                        {% endif %}
                         {% endfor %}
                         <th>Assigned Users</th>
                         <th>Created By</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
+                        <th>Created</th>
+                        <th style="position: sticky; right: 0; z-index: 15; background-color: #f8f9fa;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for package_id, package in packages.items() %}
-                    <tr>
-                        <td><strong>{{ package.id }}</strong></td>
+                    <tr>                   
+                        <td><strong>{{ package_id }}</strong></td> 
+                        
+                        <td>
+                            {% if package.data_timeline %}
+                                {% set latest_column = package.gantt_columns[-1] %}
+                                {% set status_value = package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')).lower() %}
+                            {% else %}
+                                {% set status_value = package.data.get('STATUS', package.data.get('status', '')).lower() %}
+                            {% endif %}
+                            {% if status_value %}
+                            <span class="status-{{ status_value }}">
+                                {% if package.data_timeline %}
+                                    {{ package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')) }}
+                                {% else %}
+                                    {{ package.data.get('STATUS', package.data.get('status', '')) }}
+                                {% endif %}
+                            </span>
+                            {% else %}
+                            <span style="color: #999;">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Other fields -->
                         {% for field_name, field_config in config.fields.items() %}
+                        {% if field_name not in ['STATUS', 'status'] %}
                         <td>
                             {% if field_config.type == 'multiselect' %}
                                 {% if package.data_timeline %}
                                     {% set latest_column = package.gantt_columns[-1] %}
-                                    {{ package.data_timeline[latest_column].get(field_name, [])|join(', ') }}
+                                    {% set field_value = package.data_timeline[latest_column].get(field_name, []) %}
                                 {% else %}
-                                    {{ package.data.get(field_name, [])|join(', ') }}
+                                    {% set field_value = package.data.get(field_name, []) %}
                                 {% endif %}
-                            {% elif field_name in ['STATUS', 'status'] %}
-                                {% if package.data_timeline %}
-                                    {% set latest_column = package.gantt_columns[-1] %}
-                                    {% set status_value = package.data_timeline[latest_column].get(field_name, '').lower() %}
+                                {% if field_value %}
+                                    {{ field_value|join(', ') }}
                                 {% else %}
-                                    {% set status_value = package.data.get(field_name, '').lower() %}
+                                    <span style="color: #999;">-</span>
                                 {% endif %}
-                                <span class="status-{{ status_value }}">
-                                    {% if package.data_timeline %}
-                                        {{ package.data_timeline[latest_column].get(field_name, '') }}
-                                    {% else %}
-                                        {{ package.data.get(field_name, '') }}
-                                    {% endif %}
-                                </span>
                             {% else %}
                                 {% if package.data_timeline %}
                                     {% set latest_column = package.gantt_columns[-1] %}
-                                    {{ package.data_timeline[latest_column].get(field_name, '') }}
+                                    {% set field_value = package.data_timeline[latest_column].get(field_name, '') %}
                                 {% else %}
-                                    {{ package.data.get(field_name, '') }}
+                                    {% set field_value = package.data.get(field_name, '') %}
                                 {% endif %}
+                                {{ field_value if field_value else '-' }}
                             {% endif %}
                         </td>
+                        {% endif %}
                         {% endfor %}
+                        
                         <td>
-                            {% for user in package.assigned_users %}
-                                <span style="background-color: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 5px; font-size: 11px;">{{ user }}</span>
-                            {% endfor %}
+                            <div class="user-badges">
+                                {% for user in package.assigned_users %}
+                                <span class="user-badge">{{ user }}</span>
+                                {% endfor %}
+                            </div>
                         </td>
                         <td>{{ package.created_by }}</td>
-                        <td>{{ package.created_at[:10] if package.created_at else '' }}</td>
-                        <td>
+                        <td style="white-space: nowrap;">{{ package.created_at[:10] if package.created_at else '-' }}</td>
+                        <!-- Actions column (moved to last position) -->
+                        <td style="position: sticky; right: 0; z-index: 10; background-color: white; box-shadow: -2px 0 4px rgba(0,0,0,0.05);">
                             {% set pkg_perms = package.user_permissions.get(session.username, {}) %}
                             {% set can_edit = fresh_role == 'admin' %}
                             {% set can_delete = fresh_role == 'admin' %}
 
                             {% if fresh_role != 'admin' %}
-                                <!-- Check package-specific permissions first, but ONLY if explicitly set -->
                                 {% if pkg_perms and 'can_edit' in pkg_perms %}
                                     {% set can_edit = pkg_perms.can_edit %}
                                 {% else %}
@@ -92,27 +261,21 @@
                                 {% endif %}
                             {% endif %}
                             
-                            <!-- Edit Button -->
-                            {% if can_edit and (fresh_role == 'admin' or session.username in package.assigned_users) %}
-                                <a href="{{ url_for('edit_package', package_id=package_id) }}" 
-                                class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;">
-                                    Edit
-                                </a>
-                            {% endif %}
-                            
-                            <!-- Delete Button -->
-                            {% if can_delete %}
+                            <div class="action-buttons">
+                                {% if can_edit and (fresh_role == 'admin' or session.username in package.assigned_users) %}
+                                <a href="{{ url_for('edit_package', package_id=package_id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                {% endif %}
+                                
+                                {% if can_delete %}
                                 <a href="{{ url_for('delete_package', package_id=package_id) }}" 
-                                class="btn btn-danger" 
-                                style="font-size: 11px; padding: 4px 8px;"
-                                onclick="return confirm('Are you sure you want to delete this package?')">
-                                    Delete
-                                </a>
-                            {% endif %}
-                            
-                            {% if not can_edit and not can_delete %}
-                                <span style="color: #999; font-size: 11px;">View Only</span>
-                            {% endif %}
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this package?')">Delete</a>
+                                {% endif %}
+                                
+                                {% if not can_edit and not can_delete %}
+                                <span class="view-only-badge">View Only</span>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -120,88 +283,21 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">
-            <strong>No packages found.</strong>
-            {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}    
-            <a href="{{ url_for('create_package') }}">Create your first package</a>.
-            {% else %}
-            Contact an administrator to assign packages to you.
+        <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <h3>No packages yet</h3>
+            <p>
+                {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}    
+                Get started by creating your first package.
+                {% else %}
+                Contact an administrator to assign packages to you.
+                {% endif %}
+            </p>
+            {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
+            <a href="{{ url_for('create_package') }}" class="btn btn-success">Create Package</a>
             {% endif %}
         </div>
         {% endif %}
     </div>
 </div>
-
-{% if session.role == 'admin' %}
-<div class="card">
-    <div class="card-header">
-        <h3>Admin Quick Stats</h3>
-    </div>
-    <div class="card-body">
-        <div class="form-row">
-            <div class="form-col text-center">
-                <h4>{{ packages|length }}</h4>
-                <p>Total Packages</p>
-            </div>
-            <div class="form-col text-center">
-                <h4>
-                    {% set ongoing_count = 0 %}
-                    {% for pkg in packages.values() %}
-                        {% if pkg.data_timeline %}
-                            {% set latest_col = pkg.gantt_columns[-1] %}
-                            {% if pkg.data_timeline[latest_col].get('STATUS', '') == 'Ongoing' or pkg.data_timeline[latest_col].get('status', '') == 'Ongoing' %}
-                                {% set ongoing_count = ongoing_count + 1 %}
-                            {% endif %}
-                        {% else %}
-                            {% if pkg.data.get('STATUS', '') == 'Ongoing' or pkg.data.get('status', '') == 'Ongoing' %}
-                                {% set ongoing_count = ongoing_count + 1 %}
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                    {{ ongoing_count }}
-                </h4>
-                <p>Ongoing</p>
-            </div>
-            <div class="form-col text-center">
-                <h4>
-                    {% set hold_count = 0 %}
-                    {% for pkg in packages.values() %}
-                        {% if pkg.data_timeline %}
-                            {% set latest_col = pkg.gantt_columns[-1] %}
-                            {% if pkg.data_timeline[latest_col].get('STATUS', '') == 'Hold' or pkg.data_timeline[latest_col].get('status', '') == 'Hold' %}
-                                {% set hold_count = hold_count + 1 %}
-                            {% endif %}
-                        {% else %}
-                            {% if pkg.data.get('STATUS', '') == 'Hold' or pkg.data.get('status', '') == 'Hold' %}
-                                {% set hold_count = hold_count + 1 %}
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                    {{ hold_count }}
-                </h4>
-                <p>On Hold</p>
-            </div>
-            <div class="form-col text-center">
-                <h4>
-                    {% set completed_count = 0 %}
-                    {% for pkg in packages.values() %}
-                        {% if pkg.data_timeline %}
-                            {% set latest_col = pkg.gantt_columns[-1] %}
-                            {% if pkg.data_timeline[latest_col].get('STATUS', '') == 'Completed' or pkg.data_timeline[latest_col].get('status', '') == 'Completed' %}
-                                {% set completed_count = completed_count + 1 %}
-                            {% endif %}
-                        {% else %}
-                            {% if pkg.data.get('STATUS', '') == 'Completed' or pkg.data.get('status', '') == 'Completed' %}
-                                {% set completed_count = completed_count + 1 %}
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                    {{ completed_count }}
-                </h4>
-                <p>Completed</p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

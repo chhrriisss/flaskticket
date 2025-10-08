@@ -4,67 +4,115 @@
 
 {% block content %}
 <div class="card">
-    <div class="card-header">
-        <h2>User Permission Matrix</h2>
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">User Permissions</h3>
+        </div>
     </div>
     <div class="card-body">
         <form method="POST">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th style="text-align: center;">Create</th>
-                        <th style="text-align: center;">Read</th>
-                        <th style="text-align: center;">Update</th>
-                        <th style="text-align: center;">Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for username, user_data in users.items() %}
-                    {% if username != 'admin' %}
-                    <tr>
-                        <td><strong>{{ user_data.name }}</strong><br><small style="color: #666;">{{ username }}</small></td>
-                        <td><span class="status-ongoing">{{ user_data.role|title }}</span></td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="create_{{ username }}" 
-                                   {% if user_data.get('permissions', {}).get('package_create', False) %}checked{% endif %}>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="read_{{ username }}" 
-                                   {% if user_data.get('permissions', {}).get('package_read', False) %}checked{% endif %}>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="update_{{ username }}" 
-                                   {% if user_data.get('permissions', {}).get('package_update', False) %}checked{% endif %}>
-                        </td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="delete_{{ username }}" 
-                                   {% if user_data.get('permissions', {}).get('package_delete', False) %}checked{% endif %}>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                    
-                    <!-- Admin row (read-only) -->
-                    <tr style="background-color: #f0f0f0;">
-                        <td><strong>{{ users.admin.name }}</strong><br><small style="color: #666;">admin</small></td>
-                        <td><span class="status-completed">Admin</span></td>
-                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
-                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
-                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
-                        <td style="text-align: center;"><input type="checkbox" checked disabled></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">User</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Role</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Create</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Read</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Update</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for username, user_data in users.items() %}
+                        {% if username != 'admin' %}
+                        <tr style="border-left: 4px solid transparent;">
+                            <td style="padding: 20px 16px; vertical-align: middle;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <strong style="font-size: 14px; color: #2c3e50;">{{ user_data.name }}</strong>
+                                    <small style="color: #6c757d; font-size: 12px;">@{{ username }}</small>
+                                </div>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <span class="status-ongoing" style="padding: 6px 12px; font-size: 11px; font-weight: 600;">
+                                    {{ user_data.role|title }}
+                                </span>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="create_{{ username }}" 
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user_data.get('permissions', {}).get('package_create', False) %}checked{% endif %}>
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="read_{{ username }}" 
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user_data.get('permissions', {}).get('package_read', False) %}checked{% endif %}>
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="update_{{ username }}" 
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user_data.get('permissions', {}).get('package_update', False) %}checked{% endif %}>
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                                    <input type="checkbox" name="delete_{{ username }}" 
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        {% if user_data.get('permissions', {}).get('package_delete', False) %}checked{% endif %}>
+                                </label>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Admin row (read-only) -->
+                        <tr style="background-color: #f8f9fa; border-left: 4px solid #17a2b8;">
+                            <td style="padding: 20px 16px; vertical-align: middle;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <strong style="font-size: 14px; color: #2c3e50;">{{ users.admin.name }}</strong>
+                                    <small style="color: #6c757d; font-size: 12px;">@admin</small>
+                                </div>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <span class="status-completed" style="padding: 6px 12px; font-size: 11px; font-weight: 600;">Admin</span>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; display: inline-block;">
+                                    <input type="checkbox" checked disabled style="width: 20px; height: 20px;">
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; display: inline-block;">
+                                    <input type="checkbox" checked disabled style="width: 20px; height: 20px;">
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; display: inline-block;">
+                                    <input type="checkbox" checked disabled style="width: 20px; height: 20px;">
+                                </label>
+                            </td>
+                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; display: inline-block;">
+                                    <input type="checkbox" checked disabled style="width: 20px; height: 20px;">
+                                </label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             
-            <div class="alert alert-info">
+            <div class="alert alert-info" style="margin-top: 20px;">
                 <strong>Note:</strong> Admin always has all permissions. Unchecked permissions will prevent users from performing those actions.
             </div>
             
-            <div class="form-group text-right">
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-success">Save Permissions</button>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: right;">
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary" style="margin-right: 10px;">Cancel</a>
+                <button type="submit" class="btn btn-success" style="padding: 10px 24px; font-weight: 600;">Save Permissions</button>
             </div>
         </form>
     </div>

@@ -4,11 +4,23 @@ import os
 from datetime import datetime
 from functools import wraps
 from models import db, User, FieldConfig, Package
+from flask_mail import Mail, Message
+from threading import Thread
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'your-secret-key-change-this'
+
+# Email Configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'chrisbenny2201@gmail.com'  # Change this
+app.config['MAIL_PASSWORD'] = 'msgb qzil uynt zcwp'      # Use Gmail App Password
+app.config['MAIL_DEFAULT_SENDER'] = 'Ticketing System <chrisbenny2201@gmail.com>'
+
+mail = Mail(app)
 db.init_app(app)
 
 # ============= DATABASE HELPER FUNCTIONS =============
@@ -243,6 +255,69 @@ def inject_fresh_permissions():
         'can_access_field': lambda f, a: False
     }
 
+def send_async_email(app, msg):
+    """Send email in background thread"""
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print(f"Email sent successfully to {msg.recipients}")
+        except Exception as e:
+            print(f"Email send failed: {e}")
+
+def notify_admins_package_change(package_id, changed_by, action_type, changes_detail):
+    """
+    Notify all admins about package changes
+    action_type: 'created', 'updated', 'deleted', 'column_added', 'column_deleted'
+    """
+    try:
+        # Get all admin users
+        admins = User.query.filter_by(role='admin').all()
+        admin_emails = []
+        
+        for admin in admins:
+            # Skip the admin who made the change
+            if admin.username == changed_by:
+                continue
+            # Construct email (you can add an email field to User model later)
+            admin_emails.append('chrisbenny2201@gmail.com')
+        
+        if not admin_emails:
+            return  # No admins to notify
+        
+        # Compose email
+        subject = f"Package {package_id} {action_type.title()} by {changed_by}"
+        
+        body = f"""
+Package Modification Alert
+==========================
+
+Package ID: {package_id}
+Action: {action_type.upper()}
+Modified By: {changed_by}
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Changes Made:
+{changes_detail}
+
+View Package: [Your App URL]/packages/{package_id}/edit
+
+---
+Automated notification from Ticketing System
+"""
+        
+        msg = Message(
+            subject=subject,
+            recipients=admin_emails,
+            body=body
+        )
+        
+        # Send asynchronously
+        Thread(target=send_async_email, args=(app, msg)).start()
+        
+    except Exception as e:
+        print(f"Notification error: {e}")
+        # Don't crash the app if email fails
+
 @app.route('/')
 def index():
     if 'username' in session:
@@ -279,16 +354,29 @@ def logout():
 def dashboard():
     packages = get_all_packages()
     config = {'fields': get_all_field_configs()}
+    users = get_all_users()  # ADD THIS LINE - needed for filter dropdown
+    
+    # Get filter parameter from URL
+    filter_user = request.args.get('filter_user', 'all')
     
     # Filter packages based on user assignments
     if session['role'] != 'admin':
+        # Non-admin users: only see their assigned packages
         user_packages = {}
         for pkg_id, pkg_data in packages.items():
             if session['username'] in pkg_data.get('assigned_users', []):
                 user_packages[pkg_id] = pkg_data
         packages = user_packages
+    else:
+        # Admin users: can filter by specific user
+        if filter_user != 'all':
+            filtered_packages = {}
+            for pkg_id, pkg_data in packages.items():
+                if filter_user in pkg_data.get('assigned_users', []):
+                    filtered_packages[pkg_id] = pkg_data
+            packages = filtered_packages
     
-    return render_template('dashboard.html', packages=packages, config=config)
+    return render_template('dashboard.html', packages=packages, config=config, users=users)
 
 @app.route('/admin')
 @admin_required
@@ -547,6 +635,17 @@ def create_package():
         
         db.session.add(package)
         db.session.commit()
+        
+        # Send notification (only if non-admin created package)
+        if session.get('role') != 'admin':
+            changes_detail = f"New package created\nAssigned to: {', '.join(assigned_users)}"
+            notify_admins_package_change(
+                package_id=package_id,
+                changed_by=session['username'],
+                action_type='created',
+                changes_detail=changes_detail
+            )
+        
         flash('Package created successfully')
         return redirect(url_for('dashboard'))
     
@@ -567,7 +666,7 @@ def edit_package(package_id):
     user_role = user.role
     username = session['username']
     
-    # NEW: Check package-specific permissions
+    # Check package-specific permissions
     can_edit, reason = can_user_perform_package_action(username, user_role, package, 'update')
     
     if not can_edit:
@@ -589,6 +688,10 @@ def edit_package(package_id):
     
     if request.method == 'POST':
         action = request.form.get('action', 'update')
+        
+        # Capture old state for comparison
+        old_timeline = data_timeline.copy()
+        old_assigned = set(package.get_assigned_users())
         
         if action == 'add_column':
             # Add new column
@@ -625,7 +728,23 @@ def edit_package(package_id):
                         data_timeline[new_date][field_name] = []
                     else:
                         data_timeline[new_date][field_name] = ''
+            
+            changes_detail = f"New column added: {new_date}"
+            
         else:
+            # Track changes
+            changes = []
+            
+            # Check user assignments
+            new_assigned = set(request.form.getlist('assigned_users'))
+            if new_assigned != old_assigned:
+                added = new_assigned - old_assigned
+                removed = old_assigned - new_assigned
+                if added:
+                    changes.append(f"Users added: {', '.join(added)}")
+                if removed:
+                    changes.append(f"Users removed: {', '.join(removed)}")
+            
             # Update existing columns
             for column_date in gantt_columns:
                 for field_name, field_config in config['fields'].items():
@@ -641,20 +760,41 @@ def edit_package(package_id):
                     
                     if can_write:
                         form_field = f"{field_name}_{column_date}"
+                        old_val = old_timeline.get(column_date, {}).get(field_name, '')
+                        
                         if field_config['type'] == 'multiselect':
-                            data_timeline[column_date][field_name] = request.form.getlist(form_field)
+                            new_val = request.form.getlist(form_field)
+                            data_timeline[column_date][field_name] = new_val
                         else:
-                            data_timeline[column_date][field_name] = request.form.get(form_field, '')
+                            new_val = request.form.get(form_field, '')
+                            data_timeline[column_date][field_name] = new_val
+                        
+                        # Track change
+                        if isinstance(old_val, list):
+                            old_val_str = ', '.join(old_val)
+                        else:
+                            old_val_str = old_val
+                        
+                        if isinstance(new_val, list):
+                            new_val_str = ', '.join(new_val)
+                        else:
+                            new_val_str = new_val
+                        
+                        if old_val_str != new_val_str:
+                            changes.append(
+                                f"- {field_config['label']} [{column_date}]:\n"
+                                f"  Old: {old_val_str or '(empty)'}\n"
+                                f"  New: {new_val_str or '(empty)'}"
+                            )
             
-            # NEW: Admin can update package-specific permissions
+            # Admin can update package-specific permissions
             if user_role == 'admin':
                 # Update assigned users
                 package.set_assigned_users(request.form.getlist('assigned_users'))
                 
-# Update package-specific permissions for each assigned user
+                # Update package-specific permissions for each assigned user
                 pkg_perms = {}
                 for assigned_user in request.form.getlist('assigned_users'):
-                    # Only store package-specific permissions if explicitly checked
                     user_pkg_perm = {}
                     
                     if f'can_edit_{assigned_user}' in request.form:
@@ -663,11 +803,12 @@ def edit_package(package_id):
                     if f'can_delete_{assigned_user}' in request.form:
                         user_pkg_perm['can_delete'] = True
                     
-                    # Only save if there are actual overrides
                     if user_pkg_perm:
                         pkg_perms[assigned_user] = user_pkg_perm
 
                 package.set_user_permissions(pkg_perms)
+            
+            changes_detail = "\n".join(changes) if changes else "Minor updates (no field changes detected)"
         
         # Update package
         package.set_gantt_columns(gantt_columns)
@@ -682,6 +823,15 @@ def edit_package(package_id):
         package.updated_by = username
         
         db.session.commit()
+        
+        # Send notification (only if non-admin made changes)
+        if user_role != 'admin':
+            notify_admins_package_change(
+                package_id=package_id,
+                changed_by=username,
+                action_type=action if action == 'add_column' else 'updated',
+                changes_detail=changes_detail
+            )
         
         if action == 'add_column':
             flash('New column added successfully')
@@ -698,7 +848,7 @@ def edit_package(package_id):
         'updated_by': package.updated_by,
         'updated_at': package.updated_at.isoformat() if package.updated_at else None,
         'assigned_users': package.get_assigned_users(),
-        'user_permissions': package.get_user_permissions(),  # NEW: Include for template
+        'user_permissions': package.get_user_permissions(),
         'gantt_columns': gantt_columns,
         'data_timeline': data_timeline,
         'data': package.get_data()
@@ -706,7 +856,6 @@ def edit_package(package_id):
     
     users = get_all_users()
     return render_template('edit_package.html', package=package_data, config=config, users=users)
-
 @app.route('/packages/<package_id>/delete_column/<column_date>')
 @login_required
 def delete_column(package_id, column_date):
@@ -770,6 +919,13 @@ def delete_column(package_id, column_date):
             package.set_data(data_timeline[latest_column])
         
         db.session.commit()
+        if user_role != 'admin':
+            notify_admins_package_change(
+                package_id=package_id,
+                changed_by=session['username'],
+                action_type='column_deleted',
+                changes_detail=f"Column deleted: {column_date}"
+            )
         flash('Column deleted successfully')
     
     return redirect(url_for('edit_package', package_id=package_id))
@@ -792,6 +948,15 @@ def delete_package(package_id):
     if not can_delete:
         flash(f'Permission denied: {reason}')
         return redirect(url_for('dashboard'))
+    
+    # Send notification (only if non-admin deleted package)
+    if user_role != 'admin':
+        notify_admins_package_change(
+            package_id=package_id,
+            changed_by=username,
+            action_type='deleted',
+            changes_detail=f"Package {package_id} was deleted"
+        )
     
     db.session.delete(package)
     db.session.commit()

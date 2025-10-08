@@ -4,68 +4,77 @@
 
 {% block content %}
 <div class="card">
-    <div class="card-header">
-        <h2>User Management</h2>
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">User Management</h2>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <!-- Create User Form -->
         <div class="card mb-3">
-            <div class="card-header">
-                <h3>Create New User</h3>
+            <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Create New User</h3>
+                </div>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('create_user') }}">
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="username">Username:</label>
-                                <input type="text" id="username" name="username" class="form-control" required>
+                    <fieldset class="field-group">
+                        <legend>User Details</legend>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="username">Username:</label>
+                                    <input type="text" id="username" name="username" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="password">Password:</label>
+                                    <input type="password" id="password" name="password" class="form-control" required>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="password">Password:</label>
-                                <input type="password" id="password" name="password" class="form-control" required>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="name">Full Name:</label>
+                                    <input type="text" id="name" name="name" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="role">Role:</label>
+                                    <select id="role" name="role" class="form-control" required>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="name">Full Name:</label>
-                                <input type="text" id="name" name="name" class="form-control" required>
-                            </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>
+                                <input type="checkbox" name="can_assign" value="1">
+                                Can assign tasks to others
+                            </label>
                         </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="role">Role:</label>
-                                <select id="role" name="role" class="form-control" required>
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" name="can_assign" value="1">
-                            Can assign tasks to others
-                        </label>
-                    </div>
+                    </fieldset>
                     
                     <div class="form-group text-right">
                         <button type="submit" class="btn btn-success">Create User</button>
                     </div>
                 </form>
-            </div>
-        </div>
         
         <!-- Users List -->
         <div class="card">
-            <div class="card-header">
-                <h3>Existing Users</h3>
+            <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Existing Users</h3>
+                </div>
             </div>
             <div class="card-body">
                 {% if users %}
@@ -128,9 +137,5 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="text-center mt-3">
-    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Back to Admin Panel</a>
 </div>
 {% endblock %}

@@ -4,77 +4,105 @@
 
 {% block content %}
 <div class="card">
-    <div class="card-header">
-        <h2>Create New Package</h2>
-    </div>
+        <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Create New Package</h2>
+                </div>
+            </div>
+        </div>
     <div class="card-body">
         <form method="POST">
-            <!-- Assigned Users Section -->
-            <div class="form-group">
-                <label for="assigned_users">Assign to Users:</label>
-                <select name="assigned_users" id="assigned_users" class="form-control" multiple required>
-                    {% for username, user_data in users.items() %}
-                    {% if username != 'admin' %}
-                    <option value="{{ username }}">{{ user_data.name }} ({{ username }})</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-                <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple users</small>
-            </div>
-            
-            <hr style="margin: 20px 0;">
-            
-            <!-- Dynamic Fields -->
-            <div class="form-row">
-                {% set field_count = 0 %}
-                {% for field_name, field_config in config.fields.items() %}
-                
-                {% if field_count % 2 == 0 and field_count > 0 %}
-                </div>
-                <div class="form-row">
-                {% endif %}
-                
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="{{ field_name }}">{{ field_config.label }}:</label>
-                        
-                        {% if field_config.type == 'text' %}
-                        <input type="text" id="{{ field_name }}" name="{{ field_name }}" class="form-control">
-                        
-                        {% elif field_config.type == 'date' %}
-                        <input type="date" id="{{ field_name }}" name="{{ field_name }}" class="form-control">
-                        
-                        {% elif field_config.type == 'dropdown' %}
-                        <select id="{{ field_name }}" name="{{ field_name }}" class="form-control">
-                            <option value="">Select...</option>
-                            {% for option in field_config.options %}
-                            <option value="{{ option }}">{{ option }}</option>
-                            {% endfor %}
-                        </select>
-                        
-                        {% elif field_config.type == 'multiselect' %}
-                        <select id="{{ field_name }}" name="{{ field_name }}" class="form-control" multiple>
-                            {% for option in field_config.options %}
-                            <option value="{{ option }}">{{ option }}</option>
-                            {% endfor %}
-                        </select>
-                        <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple</small>
-                        
+            <!-- USER ASSIGNMENT GROUP -->
+            <fieldset class="field-group">
+                <legend>Assign Users</legend>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="assigned_users" style="font-size: 14px; margin-bottom: 10px;">
+                        <strong>Select users to assign this package:</strong>
+                    </label>
+                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: white; max-height: 200px; overflow-y: auto;">
+                        {% for username, user_data in users.items() %}
+                        {% if username != 'admin' %}
+                        <label style="display: block; padding: 8px; margin-bottom: 5px; background-color: #f9f9f9; border-radius: 3px; cursor: pointer; transition: all 0.2s;" 
+                            onmouseover="this.style.backgroundColor='#e8f4ff'" 
+                            onmouseout="this.style.backgroundColor='#f9f9f9'">
+                            <input type="checkbox" name="assigned_users" value="{{ username }}" style="margin-right: 8px;">
+                            <strong>{{ user_data.name }}</strong> <span style="color: #666; font-size: 12px;">({{ username }})</span>
+                        </label>
                         {% endif %}
+                        {% endfor %}
                     </div>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 8px;">
+                        Select one or more users to assign
+                    </small>
                 </div>
-                
-                {% set field_count = field_count + 1 %}
-                {% endfor %}
-            </div>
+            </fieldset>
             
-            <div class="form-group text-right mt-3">
+            <!-- PACKAGE DETAILS GROUP -->
+            <fieldset class="field-group" style="margin-top: 20px;>
+                <legend>Package Details</legend>
+                <div class="form-row">
+                    {% set field_count = 0 %}
+                    {% for field_name, field_config in config.fields.items() %}
+                    
+                    {% if field_count % 2 == 0 and field_count > 0 %}
+                    </div>
+                    <div class="form-row">
+                    {% endif %}
+                    
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="{{ field_name }}">{{ field_config.label }}:</label>
+                            
+                            {% if field_config.type == 'text' %}
+                            <input type="text" 
+                                id="{{ field_name }}" 
+                                name="{{ field_name }}" 
+                                class="form-control"
+                                placeholder="Enter {{ field_config.label|lower }}...">
+                            
+                            {% elif field_config.type == 'date' %}
+                            <input type="date" 
+                                id="{{ field_name }}" 
+                                name="{{ field_name }}" 
+                                class="form-control">
+                            
+                            {% elif field_config.type == 'dropdown' %}
+                            <select id="{{ field_name }}" 
+                                    name="{{ field_name }}" 
+                                    class="form-control">
+                                <option value="">Select {{ field_config.label|lower }}...</option>
+                                {% for option in field_config.options %}
+                                <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                            
+                            {% elif field_config.type == 'multiselect' %}
+                            <select id="{{ field_name }}" 
+                                    name="{{ field_name }}" 
+                                    class="form-control" 
+                                    multiple>
+                                {% for option in field_config.options %}
+                                <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                            <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple</small>
+                            
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% set field_count = field_count + 1 %}
+                    {% endfor %}
+                </div>
+            </fieldset>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="form-group text-right mt-3" style="margin-bottom: 0;">
                 <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">Create Package</button>
             </div>
         </form>
-    </div>
-</div>
 
 <script>
 // Auto-expand textareas
@@ -90,6 +118,16 @@ document.addEventListener('DOMContentLoaded', function() {
             textarea.parentNode.replaceChild(newTextarea, textarea);
         }
     });
+});
+
+// Ensure at least one user is selected
+document.querySelector('form').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('input[name="assigned_users"]:checked');
+    if (checkboxes.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one user to assign this package to.');
+        return false;
+    }
 });
 </script>
 {% endblock %}
