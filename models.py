@@ -86,3 +86,31 @@ class Package(db.Model):
     
     def set_user_permissions(self, perms):
         self.user_permissions = json.dumps(perms)
+
+class EmailPreference(db.Model):
+    __tablename__ = 'email_preferences'
+    
+    username = db.Column(db.String(50), db.ForeignKey('users.username'), primary_key=True)
+    
+    # Individual notification toggles
+    package_created = db.Column(db.Boolean, default=True)
+    package_updated = db.Column(db.Boolean, default=True)
+    package_deleted = db.Column(db.Boolean, default=True)
+    column_added = db.Column(db.Boolean, default=True)
+    column_deleted = db.Column(db.Boolean, default=True)
+    
+    # Email address (if different from system)
+    email_address = db.Column(db.String(120))
+    
+    # Unsubscribe
+    unsubscribed = db.Column(db.Boolean, default=False)
+    
+    def get_preferences(self):
+        return {
+            'package_created': self.package_created,
+            'package_updated': self.package_updated,
+            'package_deleted': self.package_deleted,
+            'column_added': self.column_added,
+            'column_deleted': self.column_deleted,
+            'unsubscribed': self.unsubscribed
+        }

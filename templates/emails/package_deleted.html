@@ -1,0 +1,43 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<div class="alert-box danger">
+    <strong>Package Deleted</strong>
+</div>
+
+<p>Hello <strong>{{ admin_name }}</strong>,</p>
+
+<p><strong>ALERT:</strong> A package has been permanently deleted from the system.</p>
+
+<table class="detail-table">
+    <tr>
+        <th width="40%">Package ID</th>
+        <td><strong>{{ package_id }}</strong></td>
+    </tr>
+    <tr>
+        <th>Deleted By</th>
+        <td>{{ deleted_by }}</td>
+    </tr>
+    <tr>
+        <th>Deleted At</th>
+        <td>{{ deleted_at }}</td>
+    </tr>
+    <tr>
+        <th>Reason</th>
+        <td>{{ reason or 'No reason provided' }}</td>
+    </tr>
+</table>
+
+<div class="changes-list">
+    <strong>Package Information Before Deletion:</strong>
+    <ul>
+        {% for field, value in package_info.items() %}
+        <li><strong>{{ field }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+    This action cannot be undone. If this was done in error, please contact the user immediately.
+</p>
+{% endblock %}

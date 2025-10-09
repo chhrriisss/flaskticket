@@ -1,0 +1,45 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<div class="alert-box info">
+    <strong>Package Updated</strong>
+</div>
+
+<p>Hello <strong>{{ admin_name }}</strong>,</p>
+
+<p>Package <strong>{{ package_id }}</strong> has been modified by <strong>{{ updated_by }}</strong>:</p>
+
+<table class="detail-table">
+    <tr>
+        <th width="40%">Package ID</th>
+        <td><strong>{{ package_id }}</strong></td>
+    </tr>
+    <tr>
+        <th>Modified By</th>
+        <td>{{ updated_by }}</td>
+    </tr>
+    <tr>
+        <th>Modified At</th>
+        <td>{{ updated_at }}</td>
+    </tr>
+    <tr>
+        <th>Action Type</th>
+        <td><span class="badge badge-warning">{{ action_type }}</span></td>
+    </tr>
+</table>
+
+<div class="changes-list">
+    <strong>Changes Made:</strong>
+    <ul>
+        {% for change in changes %}
+        <li>{{ change }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<a href="{{ package_url }}" class="button">View Updated Package</a>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+    You received this email because you are an administrator of this system.
+</p>
+{% endblock %}

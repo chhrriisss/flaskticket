@@ -1,0 +1,53 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<div class="alert-box success">
+    <strong> New Package Created</strong>
+</div>
+
+<p>Hello <strong>{{ admin_name }}</strong>,</p>
+
+<p>A new package has been created in the system:</p>
+
+<table class="detail-table">
+    <tr>
+        <th width="40%">Package ID</th>
+        <td><strong>{{ package_id }}</strong></td>
+    </tr>
+    <tr>
+        <th>Created By</th>
+        <td>{{ created_by }}</td>
+    </tr>
+    <tr>
+        <th>Created At</th>
+        <td>{{ created_at }}</td>
+    </tr>
+    <tr>
+        <th>Assigned To</th>
+        <td>
+            {% for user in assigned_users %}
+            <span class="badge badge-info">{{ user }}</span>
+            {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td><span class="badge badge-success">{{ status }}</span></td>
+    </tr>
+</table>
+
+<div class="changes-list">
+    <strong>Package Details:</strong>
+    <ul>
+        {% for field, value in package_details.items() %}
+        <li><strong>{{ field }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<a href="{{ package_url }}" class="button">View Package Details</a>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+    You received this email because you are an administrator of this system.
+</p>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Email Preferences{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Email Notification Preferences</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <fieldset class="field-group">
+                <div class="card">
+                    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px;">
+                        <h2 style="margin: 0; font-size: 16px; font-weight: 550;">Notification Types</h2>
+                    </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                        <input type="checkbox" name="package_created" 
+                               {% if prefs.package_created %}checked{% endif %}
+                               style="width: 18px; height: 18px;">
+                        <div>
+                            <strong>Package Created</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a new package is created</p>
+                        </div>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                        <input type="checkbox" name="package_updated" 
+                               {% if prefs.package_updated %}checked{% endif %}
+                               style="width: 18px; height: 18px;">
+                        <div>
+                            <strong> Package Updated</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a package is modified</p>
+                        </div>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                        <input type="checkbox" name="package_deleted" 
+                               {% if prefs.package_deleted %}checked{% endif %}
+                               style="width: 18px; height: 18px;">
+                        <div>
+                            <strong>Package Deleted</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a package is permanently deleted</p>
+                        </div>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                        <input type="checkbox" name="column_added" 
+                               {% if prefs.column_added %}checked{% endif %}
+                               style="width: 18px; height: 18px;">
+                        <div>
+                            <strong> Column Changes</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when columns are added or deleted</p>
+                        </div>
+                    </label>
+                </div>
+            </fieldset>
+            
+            
+            <fieldset class="field-group" style="margin-top: 20px;">
+                <div class="card">
+                    <div class="card-header" 
+                        style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+                                color: white; 
+                                padding: 16px 20px;">
+                        <h2 style="margin: 0; font-size: 16px; font-weight: 550;">
+                            Custom Email Address (Optional)
+                        </h2>
+                    </div>
+
+                    <div class="form-group" style="padding: 16px;">
+                        <input type="email" 
+                            id="email_address"
+                            name="email_address" 
+                            class="form-control"
+                            value="{{ prefs.email_address or '' }}" 
+                            placeholder="Leave blank to use default system email"
+                            style="max-width: 400px; margin-top: 6px;">
+                        <small style="color: #6c757d; display: block; margin-top: 8px;">
+                            Enter a custom email if you want notifications sent to a different address.
+                        </small>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <div class="form-group text-right" style="margin-top: 30px;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save Preferences</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

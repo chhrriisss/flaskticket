@@ -14,6 +14,7 @@
     <div class="card-body">
         <form method="POST">
             <!-- USER ASSIGNMENT GROUP -->
+             {% if session.role == 'admin' %}
             <fieldset class="field-group">
                 <legend>Assign Users</legend>
                 <div class="form-group" style="margin-bottom: 0;">
@@ -37,6 +38,7 @@
                     </small>
                 </div>
             </fieldset>
+            {% endif %}
             
             <!-- PACKAGE DETAILS GROUP -->
             <fieldset class="field-group" style="margin-top: 20px;>

@@ -736,6 +736,9 @@
             Admin Panel
         </a>
         {% endif %}
+        {% if session.role == 'admin' %}
+            <a href="{{ url_for('email_preferences') }}">Email Preferences</a>
+        {% endif %}
     </div>
     {% endif %}
     

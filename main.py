@@ -8,7 +8,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from functools import wraps
-from models import db, User, FieldConfig, Package
+from models import db, User, FieldConfig, Package, EmailPreference
 from flask_mail import Mail, Message
 from threading import Thread
 
@@ -269,59 +269,128 @@ def send_async_email(app, msg):
         except Exception as e:
             print(f"Email send failed: {e}")
 
-def notify_admins_package_change(package_id, changed_by, action_type, changes_detail):
+def send_professional_email(recipients, subject, template_name, **template_vars):
     """
-    Notify all admins about package changes
+    Send professional HTML email using templates
+    recipients: list of email addresses
+    template_name: e.g., 'package_created', 'package_updated'
+    template_vars: variables to pass to template
+    """
+    try:
+        # Render HTML template
+        html_body = render_template(f'emails/{template_name}.html', **template_vars)
+        
+        # Create message
+        msg = Message(
+            subject=subject,
+            recipients=recipients,
+            html=html_body
+        )
+        
+        # Send asynchronously
+        Thread(target=send_async_email, args=(app, msg)).start()
+        print(f"✉️ Email sent: {subject} to {recipients}")
+        
+    except Exception as e:
+        print(f"❌ Email failed: {e}")
+
+
+def notify_admins_package_change(package_id, changed_by, action_type, changes_detail, package_data=None):
+    """
+    Notify admins about package changes with professional HTML emails
     action_type: 'created', 'updated', 'deleted', 'column_added', 'column_deleted'
     """
     try:
-        # Get all admin users
+        # Get all admin users with email preferences
         admins = User.query.filter_by(role='admin').all()
-        admin_emails = []
         
         for admin in admins:
             # Skip the admin who made the change
             if admin.username == changed_by:
                 continue
-            # Construct email (you can add an email field to User model later)
-            admin_emails.append('chrisbenny2201@gmail.com')
-        
-        if not admin_emails:
-            return  # No admins to notify
-        
-        # Compose email
-        subject = f"Package {package_id} {action_type.title()} by {changed_by}"
-        
-        body = f"""
-Package Modification Alert
-==========================
-
-Package ID: {package_id}
-Action: {action_type.upper()}
-Modified By: {changed_by}
-Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Changes Made:
-{changes_detail}
-
-View Package: [Your App URL]/packages/{package_id}/edit
-
----
-Automated notification from Ticketing System
-"""
-        
-        msg = Message(
-            subject=subject,
-            recipients=admin_emails,
-            body=body
-        )
-        
-        # Send asynchronously
-        Thread(target=send_async_email, args=(app, msg)).start()
-        
+            
+            # Check email preferences
+            prefs = db.session.get(EmailPreference, admin.username)
+            
+            if prefs and prefs.unsubscribed:
+                continue
+            
+            # Check if this notification type is enabled
+            if prefs:
+                if action_type == 'created' and not prefs.package_created:
+                    continue
+                elif action_type == 'updated' and not prefs.package_updated:
+                    continue
+                elif action_type == 'deleted' and not prefs.package_deleted:
+                    continue
+                elif action_type in ['column_added', 'column_deleted'] and not prefs.column_added:
+                    continue
+            
+            # Get email address
+            email = prefs.email_address if prefs and prefs.email_address else 'chrisbenny2201@gmail.com'
+            
+            # Prepare template variables based on action type
+            if action_type == 'created':
+                subject = f"📦 New Package Created: {package_id}"
+                template = 'package_created'
+                template_vars = {
+                    'admin_name': admin.name,
+                    'package_id': package_id,
+                    'created_by': changed_by,
+                    'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'assigned_users': package_data.get('assigned_users', []) if package_data else [],
+                    'status': package_data.get('status', 'N/A') if package_data else 'N/A',
+                    'package_details': changes_detail,
+                    'package_url': f"http://localhost:5000/packages/{package_id}/edit"
+                }
+            
+            elif action_type == 'updated':
+                subject = f"🔄 Package Updated: {package_id}"
+                template = 'package_updated'
+                changes_list = changes_detail.split('\n') if isinstance(changes_detail, str) else [changes_detail]
+                template_vars = {
+                    'admin_name': admin.name,
+                    'package_id': package_id,
+                    'updated_by': changed_by,
+                    'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'action_type': action_type.replace('_', ' ').title(),
+                    'changes': [c for c in changes_list if c.strip()],
+                    'package_url': f"http://localhost:5000/packages/{package_id}/edit"
+                }
+            
+            elif action_type == 'deleted':
+                subject = f"🗑️ Package Deleted: {package_id}"
+                template = 'package_deleted'
+                template_vars = {
+                    'admin_name': admin.name,
+                    'package_id': package_id,
+                    'deleted_by': changed_by,
+                    'deleted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'reason': None,
+                    'package_info': package_data or {}
+                }
+            
+            elif action_type in ['column_added', 'column_deleted']:
+                subject = f"📊 Package Modified: {package_id}"
+                template = 'package_updated'
+                template_vars = {
+                    'admin_name': admin.name,
+                    'package_id': package_id,
+                    'updated_by': changed_by,
+                    'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'action_type': action_type.replace('_', ' ').title(),
+                    'changes': [changes_detail],
+                    'package_url': f"http://localhost:5000/packages/{package_id}/edit"
+                }
+            
+            else:
+                continue
+            
+            # Send email
+            send_professional_email([email], subject, template, **template_vars)
+    
     except Exception as e:
-        print(f"Notification error: {e}")
-        # Don't crash the app if email fails
+        print(f"❌ Notification error: {e}")
 
 @app.route('/')
 def index():
@@ -613,8 +682,15 @@ def create_package():
         pkg_count = Package.query.count()
         package_id = f"PKG_{pkg_count + 1:04d}"
         
-        # Get assigned users
-        assigned_users = request.form.getlist('assigned_users')
+        # Get assigned users (admin can assign, users auto-assign to themselves)
+        if session['role'] == 'admin':
+            assigned_users = request.form.getlist('assigned_users')
+            if not assigned_users:
+                flash('Please assign at least one user')
+                return redirect(url_for('create_package'))
+        else:
+            # Non-admin users: auto-assign to themselves
+            assigned_users = [session['username']]
         
         # Build package data with initial column
         initial_column_date = datetime.now().strftime('%Y-%m-%d')
@@ -1222,6 +1298,36 @@ def export_excel():
         as_attachment=True,
         download_name=filename
     )
+
+@app.route('/email-preferences', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def email_preferences():
+    """Manage email notification preferences"""
+    username = session['username']
+    prefs = db.session.get(EmailPreference, username)
+    
+    # Create default preferences if not exist
+    if not prefs:
+        prefs = EmailPreference(username=username)
+        db.session.add(prefs)
+        db.session.commit()
+    
+    if request.method == 'POST':
+        # Update preferences
+        prefs.package_created = 'package_created' in request.form
+        prefs.package_updated = 'package_updated' in request.form
+        prefs.package_deleted = 'package_deleted' in request.form
+        prefs.column_added = 'column_added' in request.form
+        prefs.column_deleted = 'column_deleted' in request.form
+        
+        prefs.email_address = request.form.get('email_address', '')
+        
+        db.session.commit()
+        flash('Email preferences updated successfully')
+        return redirect(url_for('email_preferences'))
+    
+    return render_template('email_preferences.html', prefs=prefs.get_preferences())
 
 if __name__ == '__main__':
     init_default_data()

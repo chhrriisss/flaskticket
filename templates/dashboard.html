@@ -8,15 +8,38 @@
 <div class="card">
     <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Status</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Status Overview</h3>
         </div>
     </div>
     <div class="card-body">
-        {# Find the status field dynamically #}
-        {% set status_field = namespace(name=None) %}
-        {% for field_name, field_config in config.fields.items() %}
-            {% if field_name.upper() == 'STATUS' or field_config.label.upper() == 'STATUS' %}
-                {% set status_field.name = field_name %}
+        {% set counts = namespace(not_started=0, ongoing=0, completed=0, delayed=0) %}
+        
+        {% for pkg_id, pkg in packages.items() %}
+            {% if pkg.data_timeline %}
+                {% set latest_col = pkg.gantt_columns[-1] %}
+                {% set latest_data = pkg.data_timeline[latest_col] %}
+            {% else %}
+                {% set latest_data = pkg.data %}
+            {% endif %}
+            
+            {% set sow = latest_data.get('SOW', '') %}
+            {% set sow_date = latest_data.get('SOW DATE', '') %}
+            {% set actual_closure = latest_data.get('ACTUAL CLOSURE DATE', '') %}
+            {% set commercial_target = latest_data.get('COMMERCIAL TARGET DATE', '') %}
+            
+            {% if actual_closure %}
+                {% set counts.completed = counts.completed + 1 %}
+            {% elif not sow or sow|upper == 'NO' or not sow_date %}
+                {% set counts.not_started = counts.not_started + 1 %}
+            {% else %}
+                {% set counts.ongoing = counts.ongoing + 1 %}
+                
+                {% if commercial_target %}
+                    {% set today = '2025-10-09' %}
+                    {% if commercial_target < today %}
+                        {% set counts.delayed = counts.delayed + 1 %}
+                    {% endif %}
+                {% endif %}
             {% endif %}
         {% endfor %}
         
@@ -26,80 +49,25 @@
                 <div class="stat-label">Total Packages</div>
             </div>
             
-            {% if status_field.name %}
-                <div class="stat-card stat-ongoing">
-                    <div class="stat-value">
-                        {% set ongoing_count = 0 %}
-                        {% for pkg in packages.values() %}
-                            {% if pkg.data_timeline %}
-                                {% set latest_col = pkg.gantt_columns[-1] %}
-                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'ongoing' %}
-                                    {% set ongoing_count = ongoing_count + 1 %}
-                                {% endif %}
-                            {% else %}
-                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'ongoing' %}
-                                    {% set ongoing_count = ongoing_count + 1 %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        {{ ongoing_count }}
-                    </div>
-                    <div class="stat-label">Ongoing</div>
-                </div>
-                
-                <div class="stat-card stat-hold">
-                    <div class="stat-value">
-                        {% set hold_count = 0 %}
-                        {% for pkg in packages.values() %}
-                            {% if pkg.data_timeline %}
-                                {% set latest_col = pkg.gantt_columns[-1] %}
-                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'hold' %}
-                                    {% set hold_count = hold_count + 1 %}
-                                {% endif %}
-                            {% else %}
-                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'hold' %}
-                                    {% set hold_count = hold_count + 1 %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        {{ hold_count }}
-                    </div>
-                    <div class="stat-label">On Hold</div>
-                </div>
-                
-                <div class="stat-card stat-completed">
-                    <div class="stat-value">
-                        {% set completed_count = 0 %}
-                        {% for pkg in packages.values() %}
-                            {% if pkg.data_timeline %}
-                                {% set latest_col = pkg.gantt_columns[-1] %}
-                                {% set status_val = pkg.data_timeline[latest_col].get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'completed' %}
-                                    {% set completed_count = completed_count + 1 %}
-                                {% endif %}
-                            {% else %}
-                                {% set status_val = pkg.data.get(status_field.name, '')|string|lower %}
-                                {% if status_val == 'completed' %}
-                                    {% set completed_count = completed_count + 1 %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        {{ completed_count }}
-                    </div>
-                    <div class="stat-label">Completed</div>
-                </div>
-            {% else %}
-                <div class="stat-card" style="grid-column: span 3; background-color: #fff3cd; border: 2px solid #ffc107;">
-                    <div class="stat-value" style="font-size: 14px; color: #856404;">
-                        ⚠️ No Status Field Found
-                    </div>
-                    <div class="stat-label" style="color: #856404;">Add a field named "STATUS" in Field Configuration</div>
-                </div>
-            {% endif %}
+            <div class="stat-card" style="border-color: #6c757d;">
+                <div class="stat-value" style="color: #6c757d;">{{ counts.not_started }}</div>
+                <div class="stat-label">Not Started</div>
+            </div>
+            
+            <div class="stat-card stat-ongoing">
+                <div class="stat-value">{{ counts.ongoing }}</div>
+                <div class="stat-label">Ongoing</div>
+            </div>
+            
+            <div class="stat-card stat-completed">
+                <div class="stat-value">{{ counts.completed }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            
+            <div class="stat-card" style="border-color: #dc3545;">
+                <div class="stat-value" style="color: #dc3545;">{{ counts.delayed }}</div>
+                <div class="stat-label">Delayed</div>
+            </div>
         </div>
     </div>
 </div>
