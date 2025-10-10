@@ -3,91 +3,110 @@
 {% block title %}Email Preferences{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px;">
-        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Email Notification Preferences</h2>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Email Notification Preferences</h2>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <form method="POST">
-            <fieldset class="field-group">
-                <div class="card">
-                    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px;">
-                        <h2 style="margin: 0; font-size: 16px; font-weight: 550;">Notification Types</h2>
-                    </div>
+            <fieldset class="field-group" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 0; margin-bottom: 25px; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                <div style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none; margin-bottom: 0;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;"></span> Notification Types
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <p style="color: #6c757d; font-size: 13px; margin: 0 0 16px 0;">Choose which package events should trigger email notifications</p>
                 
                 <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" 
+                                            onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 4px 12px rgba(0,102,204,0.15)'; this.style.transform='translateX(4px)'" 
+                                            onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
                         <input type="checkbox" name="package_created" 
                                {% if prefs.package_created %}checked{% endif %}
-                               style="width: 18px; height: 18px;">
-                        <div>
-                            <strong>Package Created</strong>
-                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a new package is created</p>
+                               style="width: 20px; height: 20px; cursor: pointer; accent-color: #0066cc;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 14px; color: #2c3e50;">Package Created</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 12px;">Get notified when a new package is created</p>
                         </div>
                     </label>
                     
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" 
+                           onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 4px 12px rgba(0,102,204,0.15)'; this.style.transform='translateX(4px)'" 
+                           onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
                         <input type="checkbox" name="package_updated" 
                                {% if prefs.package_updated %}checked{% endif %}
-                               style="width: 18px; height: 18px;">
-                        <div>
-                            <strong> Package Updated</strong>
-                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a package is modified</p>
+                               style="width: 20px; height: 20px; cursor: pointer; accent-color: #0066cc;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 14px; color: #2c3e50;">Package Updated</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 12px;">Get notified when a package is modified</p>
                         </div>
                     </label>
                     
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" 
+                           onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 4px 12px rgba(0,102,204,0.15)'; this.style.transform='translateX(4px)'" 
+                           onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
                         <input type="checkbox" name="package_deleted" 
                                {% if prefs.package_deleted %}checked{% endif %}
-                               style="width: 18px; height: 18px;">
-                        <div>
-                            <strong>Package Deleted</strong>
-                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when a package is permanently deleted</p>
+                               style="width: 20px; height: 20px; cursor: pointer; accent-color: #0066cc;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 14px; color: #2c3e50;">Package Deleted</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 12px;">Get notified when a package is permanently deleted</p>
                         </div>
                     </label>
                     
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" 
+                           onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 4px 12px rgba(0,102,204,0.15)'; this.style.transform='translateX(4px)'" 
+                           onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
                         <input type="checkbox" name="column_added" 
                                {% if prefs.column_added %}checked{% endif %}
-                               style="width: 18px; height: 18px;">
-                        <div>
-                            <strong> Column Changes</strong>
-                            <p style="margin: 0; color: #6c757d; font-size: 13px;">Get notified when columns are added or deleted</p>
+                               style="width: 20px; height: 20px; cursor: pointer; accent-color: #0066cc;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 14px; color: #2c3e50;">Column Changes</strong>
+                            <p style="margin: 0; color: #6c757d; font-size: 12px;">Get notified when columns are added or deleted</p>
                         </div>
                     </label>
+                </div>
                 </div>
             </fieldset>
             
             
-            <fieldset class="field-group" style="margin-top: 20px;">
-                <div class="card">
-                    <div class="card-header" 
-                        style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-                                color: white; 
-                                padding: 16px 20px;">
-                        <h2 style="margin: 0; font-size: 16px; font-weight: 550;">
-                            Custom Email Address (Optional)
-                        </h2>
-                    </div>
-
-                    <div class="form-group" style="padding: 16px;">
-                        <input type="email" 
-                            id="email_address"
-                            name="email_address" 
-                            class="form-control"
-                            value="{{ prefs.email_address or '' }}" 
-                            placeholder="Leave blank to use default system email"
-                            style="max-width: 400px; margin-top: 6px;">
-                        <small style="color: #6c757d; display: block; margin-top: 8px;">
-                            Enter a custom email if you want notifications sent to a different address.
+            <fieldset class="field-group" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 0; margin-bottom: 25px; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                <div style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none; margin-bottom: 0;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;"></span> Custom Email Address
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <p style="color: #6c757d; font-size: 13px; margin: 0 0 16px 0;">
+                        <strong>Optional:</strong> Enter a custom email to receive notifications at a different address. Leave blank to use the default system email.
+                    </p>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px;">
+                            Email Address
+                        </label>
+                        <input type="email" name="email_address" class="form-control" 
+                               value="{{ prefs.email_address or '' }}" 
+                               placeholder="your.email@example.com"
+                               style="padding: 12px 16px; font-size: 14px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                        <small style="color: #6c757d; font-size: 12px; display: block; margin-top: 8px;">
+                             Current default: <strong>chrisbenny2201@gmail.com</strong>
                         </small>
                     </div>
                 </div>
             </fieldset>
-            
-            <div class="form-group text-right" style="margin-top: 30px;">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-success">Save Preferences</button>
+                    
+            <div class="form-group text-right" style="margin-top: 36px; padding-top: 24px; border-top: 2px solid #e0e0e0;">
+                <button type="submit" class="btn btn-success" style="padding: 12px 32px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);">
+                    Save Preferences
+                </button>
             </div>
         </form>
     </div>
