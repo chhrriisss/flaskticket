@@ -452,6 +452,12 @@ def dashboard():
     
     return render_template('dashboard.html', packages=packages, config=config, users=users)
 
+@app.route('/charts-visualization')
+@login_required
+def charts_visualization():
+    """Charts and Visualization page"""
+    return render_template('charts_visualization.html')
+
 @app.route('/admin')
 @admin_required
 def admin_panel():
@@ -1329,6 +1335,187 @@ def email_preferences():
     
     return render_template('email_preferences.html', prefs=prefs.get_preferences())
 
+@app.route('/api/dashboard-stats')
+@login_required
+def dashboard_stats():
+    """API endpoint to get dashboard statistics for charts"""
+    packages = get_all_packages()
+    config = {'fields': get_all_field_configs()}
+    
+    # Filter packages based on user role
+    if session['role'] != 'admin':
+        user_packages = {}
+        for pkg_id, pkg_data in packages.items():
+            if session['username'] in pkg_data.get('assigned_users', []):
+                user_packages[pkg_id] = pkg_data
+        packages = user_packages
+    
+    # Calculate statistics
+    stats = {
+        'total': len(packages),
+        'ongoing': 0,
+        'completed': 0,
+        'hold': 0,
+        'cancelled': 0,
+        'not_started': 0,
+        'delayed': 0,
+        'packages_per_user': {},
+        'monthly_trend': {}
+    }
+    
+    today = datetime.now().date()
+    
+    for pkg_id, pkg in packages.items():
+        # Get latest status
+        if pkg.get('data_timeline'):
+            latest_col = pkg['gantt_columns'][-1]
+            latest_data = pkg['data_timeline'][latest_col]
+        else:
+            latest_data = pkg.get('data', {})
+        
+        status = latest_data.get('STATUS', latest_data.get('status', '')).lower()
+        sow = latest_data.get('SOW', '')
+        sow_date = latest_data.get('SOW DATE', '')
+        actual_closure = latest_data.get('ACTUAL CLOSURE DATE', '')
+        commercial_target = latest_data.get('COMMERCIAL TARGET DATE', '')
+        
+        # Count by status
+        if actual_closure:
+            stats['completed'] += 1
+        elif not sow or sow.upper() == 'NO' or not sow_date:
+            stats['not_started'] += 1
+        elif status == 'ongoing':
+            stats['ongoing'] += 1
+        elif status == 'hold':
+            stats['hold'] += 1
+        elif status == 'cancelled':
+            stats['cancelled'] += 1
+        
+        # Check if delayed
+        if commercial_target and not actual_closure:
+            try:
+                target_date = datetime.strptime(commercial_target, '%Y-%m-%d').date()
+                if target_date < today:
+                    stats['delayed'] += 1
+            except:
+                pass
+        
+        # Count per user
+        for user in pkg.get('assigned_users', []):
+            stats['packages_per_user'][user] = stats['packages_per_user'].get(user, 0) + 1
+        
+        # Monthly trend
+        created_at = pkg.get('created_at')
+        if created_at:
+            try:
+                month = created_at[:7]  # YYYY-MM
+                stats['monthly_trend'][month] = stats['monthly_trend'].get(month, 0) + 1
+            except:
+                pass
+    
+    return jsonify(stats)
+
+@app.route('/api/gantt-data')
+@login_required
+def gantt_data():
+    """API endpoint to get Gantt chart data"""
+    packages = get_all_packages()
+    config = {'fields': get_all_field_configs()}
+    
+    # Filter packages based on user role
+    if session['role'] != 'admin':
+        user_packages = {}
+        for pkg_id, pkg_data in packages.items():
+            if session['username'] in pkg_data.get('assigned_users', []):
+                user_packages[pkg_id] = pkg_data
+        packages = user_packages
+    
+    # Build Gantt data
+    gantt_packages = []
+    today = datetime.now().date()
+    
+    for pkg_id, pkg in packages.items():
+        # Get latest data
+        if pkg.get('data_timeline'):
+            latest_col = pkg['gantt_columns'][-1]
+            latest_data = pkg['data_timeline'][latest_col]
+        else:
+            latest_data = pkg.get('data', {})
+        
+        sow = latest_data.get('SOW', '')
+        sow_date = latest_data.get('SOW DATE', '')
+        commercial_target = latest_data.get('COMMERCIAL TARGET DATE', '')
+        actual_closure = latest_data.get('ACTUAL CLOSURE DATE', '')
+        created_at = pkg.get('created_at', '')
+        
+        # Determine status
+        status = 'not_started'
+        
+        # Check if package has started
+        if sow and sow.upper() != 'NO' and sow_date:
+            status = 'ongoing'
+            
+            # Check if completed
+            if actual_closure:
+                status = 'completed'
+            # Check if overdue
+            elif commercial_target:
+                try:
+                    target_date = datetime.strptime(commercial_target, '%Y-%m-%d').date()
+                    if target_date < today:
+                        status = 'overdue'
+                except:
+                    pass
+        
+        # Determine start and end dates for Gantt display
+        start_date = None
+        end_date = None
+        
+        # Priority 1: Use actual dates if available
+        if sow_date:
+            start_date = sow_date
+        elif created_at:
+            # Fallback: use creation date as start
+            try:
+                start_date = created_at[:10]  # Extract YYYY-MM-DD
+            except:
+                start_date = today.strftime('%Y-%m-%d')
+        else:
+            # Last resort: use today as start
+            start_date = today.strftime('%Y-%m-%d')
+        
+        # Determine end date
+        if actual_closure:
+            end_date = actual_closure
+        elif commercial_target:
+            end_date = commercial_target
+        else:
+            # Fallback: use start + 30 days or today (whichever is later)
+            try:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                default_end = start_dt + timedelta(days=30)
+                end_date = max(default_end, today).strftime('%Y-%m-%d')
+            except:
+                end_date = today.strftime('%Y-%m-%d')
+        
+        # Ensure end date is not before start date
+        try:
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+            if end_dt < start_dt:
+                end_date = (start_dt + timedelta(days=30)).strftime('%Y-%m-%d')
+        except:
+            pass
+        
+        gantt_packages.append({
+            'id': pkg_id,
+            'start': start_date,
+            'end': end_date,
+            'status': status,
+            'assigned_users': pkg.get('assigned_users', [])
+        })
+    
+    return jsonify(gantt_packages)
 if __name__ == '__main__':
     init_default_data()
     migrate_field_permissions_to_username()

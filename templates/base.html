@@ -8,6 +8,7 @@
     <!-- Flatpickr Date Picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
         * {
@@ -799,6 +800,10 @@
         <a href="{{ url_for('dashboard') }}" 
         class="{% if request.endpoint == 'dashboard' %}nav-active{% endif %}">
             Dashboard
+        </a>
+        <a href="{{ url_for('charts_visualization') }}"
+        class="{% if request.endpoint == 'charts_visualization' %}nav-active{% endif %}">
+            Charts & Visualization
         </a>
         {% if session.get('permissions', {}).get('package_create', False) or session.can_assign or session.role == 'admin' %}
         <a href="{{ url_for('create_package') }}"

@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Charts & Visualization - Ticketing Tool{% endblock %}
+
+{% block content %}
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Charts & Visualization</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Charts Section -->
+<div class="card" style="box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 24px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Analytics Dashboard</h3>
+        </div>
+    </div>
+    <div class="card-body" style="padding: 28px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px;">
+            <!-- Status Distribution Pie Chart -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #2c3e50; font-weight: 600;"> Status Distribution</h4>
+                <canvas id="statusPieChart" style="max-height: 300px;"></canvas>
+            </div>
+            
+            <!-- User Workload Bar Chart -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #2c3e50; font-weight: 600;"> Workload Distribution</h4>
+                <canvas id="userWorkloadChart" style="max-height: 300px;"></canvas>
+            </div>
+            
+            <!-- Monthly Trend Line Chart -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); grid-column: span 2;">
+                <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #2c3e50; font-weight: 600;"> Package Creation Trend</h4>
+                <canvas id="monthlyTrendChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gantt Chart Section -->
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: white;"> Gantt Chart - Timeline View</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body" style="padding: 28px;">
+        <!-- Legend -->
+        <div style="display: flex; gap: 24px; margin-bottom: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 24px; height: 16px; background: linear-gradient(90deg, #0066cc, #004999); border-radius: 4px;"></div>
+                <span style="font-size: 13px; color: #495057; font-weight: 500;">Ongoing</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 24px; height: 16px; background: linear-gradient(90deg, #28a745, #1e7e34); border-radius: 4px;"></div>
+                <span style="font-size: 13px; color: #495057; font-weight: 500;">Completed</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 24px; height: 16px; background: linear-gradient(90deg, #dc3545, #bd2130); border-radius: 4px;"></div>
+                <span style="font-size: 13px; color: #495057; font-weight: 500;">Overdue</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 24px; height: 16px; background: linear-gradient(90deg, #6c757d, #545b62); border-radius: 4px;"></div>
+                <span style="font-size: 13px; color: #495057; font-weight: 500;">Not Started</span>
+            </div>
+        </div>
+        
+        <!-- Gantt Chart Container -->
+        <div id="ganttChart" style="overflow-x: auto; overflow-y: auto; max-height: 600px; border: 2px solid #e0e0e0; border-radius: 8px; background: white;">
+            <div style="padding: 40px; text-align: center; color: #6c757d;">
+                <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+                <p style="font-size: 14px; margin: 0;">Loading Gantt chart...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== ANALYTICS CHARTS ====================
+
+// Fetch dashboard statistics for charts
+fetch('{{ url_for("dashboard_stats") }}')
+    .then(response => response.json())
+    .then(stats => {
+        // 1. STATUS PIE CHART
+        const statusCtx = document.getElementById('statusPieChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Ongoing', 'Completed', 'Not Started', 'Delayed'],
+                datasets: [{
+                    data: [
+                        stats.ongoing,
+                        stats.completed,
+                        stats.not_started,
+                        stats.hold,
+                        stats.cancelled,
+                        stats.delayed
+                    ],
+                    backgroundColor: [
+                        '#28a745',  // Ongoing - green
+                        '#17a2b8',  // Completed - teal
+                        '#6c757d',  // Not Started - gray
+                        '#ffc107',  // Hold - yellow
+                        '#dc3545',  // Cancelled - red
+                        '#fd7e14'   // Delayed - orange
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 2. USER WORKLOAD BAR CHART
+        const workloadCtx = document.getElementById('userWorkloadChart').getContext('2d');
+        const userLabels = Object.keys(stats.packages_per_user);
+        const userValues = Object.values(stats.packages_per_user);
+        
+        new Chart(workloadCtx, {
+            type: 'bar',
+            data: {
+                labels: userLabels,
+                datasets: [{
+                    label: 'Packages Assigned',
+                    data: userValues,
+                    backgroundColor: 'rgba(0, 102, 204, 0.7)',
+                    borderColor: '#0066cc',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Packages: ${context.parsed.y}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 3. MONTHLY TREND LINE CHART
+        const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+        const monthLabels = Object.keys(stats.monthly_trend).sort();
+        const monthValues = monthLabels.map(m => stats.monthly_trend[m]);
+        
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Packages Created',
+                    data: monthValues,
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderColor: '#28a745',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#28a745',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return `Month: ${context[0].label}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error loading dashboard stats:', error);
+    });
+
+// ==================== GANTT CHART ====================
+
+// Utility functions for Gantt chart
+function getDateRange(packages) {
+    if (packages.length === 0) return { minDate: new Date(), maxDate: new Date() };
+    
+    let minDate = new Date(packages[0].start);
+    let maxDate = new Date(packages[0].end);
+    
+    packages.forEach(pkg => {
+        const start = new Date(pkg.start);
+        const end = new Date(pkg.end);
+        
+        if (start < minDate) minDate = start;
+        if (end > maxDate) maxDate = end;
+    });
+    
+    // Add padding
+    minDate.setDate(minDate.getDate() - 7);
+    maxDate.setDate(maxDate.getDate() + 7);
+    
+    return { minDate, maxDate };
+}
+
+function generateDateColumns(minDate, maxDate) {
+    const dates = [];
+    const current = new Date(minDate);
+    
+    while (current <= maxDate) {
+        dates.push(new Date(current));
+        current.setDate(current.getDate() + 7); // Weekly columns
+    }
+    
+    return dates;
+}
+
+function calculateBarPosition(startDate, endDate, minDate, maxDate) {
+    const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+    const startDays = (new Date(startDate) - minDate) / (1000 * 60 * 60 * 24);
+    const durationDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
+    
+    const left = (startDays / totalDays) * 100;
+    const width = Math.max((durationDays / totalDays) * 100, 2); // Minimum 2% width
+    
+    return { left, width };
+}
+
+function formatDate(date) {
+    const d = new Date(date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function renderGanttChart(packages) {
+    const container = document.getElementById('ganttChart');
+    
+    if (packages.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">📦</div>
+                <h3 style="color: #6c757d; margin-bottom: 10px; font-size: 18px;">No packages with dates found</h3>
+                <p style="color: #6c757d; font-size: 14px;">Packages need SOW DATE and COMMERCIAL TARGET DATE to appear in Gantt view.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const { minDate, maxDate } = getDateRange(packages);
+    const dateColumns = generateDateColumns(minDate, maxDate);
+    
+    // Build HTML
+    let html = '<div style="min-width: 1400px;">';
+    
+    // Header row
+    html += `
+        <div style="display: flex; border-bottom: 3px solid #0066cc; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); position: sticky; top: 0; z-index: 10;">
+            <div style="width: 220px; min-width: 220px; padding: 16px; font-weight: 700; font-size: 12px; color: #495057; border-right: 2px solid #dee2e6; text-transform: uppercase; letter-spacing: 0.5px;">
+                Package ID
+            </div>
+            <div style="flex: 1; display: flex;">
+    `;
+    
+    dateColumns.forEach(date => {
+        html += `
+            <div style="flex: 1; padding: 16px 8px; text-align: center; font-size: 11px; font-weight: 600; color: #495057; border-right: 1px solid #e0e0e0;">
+                ${formatDate(date)}
+            </div>
+        `;
+    });
+    
+    html += '</div></div>';
+    
+    // Package rows
+    packages.forEach((pkg, index) => {
+        const { left, width } = calculateBarPosition(pkg.start, pkg.end, minDate, maxDate);
+        
+        let barGradient = 'linear-gradient(90deg, #0066cc, #004999)';
+        
+        if (pkg.status === 'completed') {
+            barGradient = 'linear-gradient(90deg, #28a745, #1e7e34)';
+        } else if (pkg.status === 'overdue') {
+            barGradient = 'linear-gradient(90deg, #dc3545, #bd2130)';
+        } else if (pkg.status === 'not_started') {
+            barGradient = 'linear-gradient(90deg, #6c757d, #545b62)';
+        }
+        
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#fafbfc';
+        
+        html += `
+            <div style="display: flex; border-bottom: 1px solid #e0e0e0; background-color: ${bgColor}; transition: background-color 0.2s;" 
+                 onmouseover="this.style.backgroundColor='#f0f7ff'" 
+                 onmouseout="this.style.backgroundColor='${bgColor}'">
+                <div style="width: 220px; min-width: 220px; padding: 16px; border-right: 2px solid #dee2e6;">
+                    <div style="font-weight: 600; font-size: 13px; color: #0066cc; margin-bottom: 4px;">${pkg.id}</div>
+                    <div style="font-size: 11px; color: #6c757d; display: flex; flex-wrap: wrap; gap: 4px;">
+                        ${pkg.assigned_users.map(u => `<span style="background: #e9ecef; padding: 2px 6px; border-radius: 10px;">${u}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="flex: 1; position: relative; padding: 12px 0;">
+                    <!-- Timeline grid -->
+                    <div style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; display: flex;">
+                        ${dateColumns.map(() => '<div style="flex: 1; border-right: 1px solid #f0f0f0;"></div>').join('')}
+                    </div>
+                    
+                    <!-- Gantt bar -->
+                    <div style="position: relative; height: 100%; padding: 8px 0;">
+                        <div style="position: absolute; left: ${left}%; width: ${width}%; height: 28px; background: ${barGradient}; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; padding: 0 12px; color: white; font-size: 11px; font-weight: 600; overflow: hidden; transition: all 0.2s; cursor: pointer;"
+                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.25)'"
+                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'"
+                             title="${pkg.id}: ${pkg.start} → ${pkg.end} (${pkg.status})">
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pkg.start} - ${pkg.end}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// Fetch Gantt data and render
+fetch('{{ url_for("gantt_data") }}')
+    .then(response => response.json())
+    .then(packages => {
+        renderGanttChart(packages);
+    })
+    .catch(error => {
+        console.error('Error loading Gantt data:', error);
+        document.getElementById('ganttChart').innerHTML = `
+            <div style="padding: 40px; text-align: center; color: #dc3545;">
+                <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                <p style="font-size: 14px;">Error loading Gantt chart. Please refresh the page.</p>
+            </div>
+        `;
+    });
+</script>
+
+<style>
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .card-body > div[style*="grid-template-columns"] > div {
+        grid-column: span 1 !important;
+    }
+    
+    #ganttChart {
+        font-size: 11px;
+    }
+}
+
+/* Smooth scrolling */
+#ganttChart {
+    scroll-behavior: smooth;
+}
+
+/* Print styles */
+@media print {
+    .btn, .nav {
+        display: none;
+    }
+    
+    #ganttChart {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+</style>
+{% endblock %}
