@@ -3,83 +3,121 @@
 {% block title %}Edit Field - Ticketing Tool{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>Edit Field: {{ field_name }}</h2>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                ⚙️
+            </div>
+            <div>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Edit Field Configuration</h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 400;">Field: <strong style="font-weight: 600;">{{ field_name }}</strong></p>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 28px;">
         <form method="POST">
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="field_name">Field Name (System):</label>
-                        <input type="text" id="field_name" name="field_name" class="form-control" 
-                               value="{{ field_name }}" required>
-                        <small style="color: #666; font-size: 12px;">Use lowercase with underscores</small>
+            <fieldset class="field-group" style="background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%); border: 2px solid #e0e4e8; padding: 24px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <legend style="color: #2c3e50; font-size: 15px; font-weight: 600; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+                    📝 Field Details
+                </legend>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="field_name" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Field Name (System):</label>
+                            <input type="text" id="field_name" name="field_name" class="form-control" 
+                                   value="{{ field_name }}" required
+                                   placeholder="e.g., customer_id"
+                                   style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                   onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                   onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                            <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Use lowercase with underscores</small>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="field_label" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Field Label (Display):</label>
+                            <input type="text" id="field_label" name="field_label" class="form-control" 
+                                   value="{{ field_config.label }}" required
+                                   placeholder="e.g., Customer ID"
+                                   style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                   onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                   onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                        </div>
                     </div>
                 </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="field_label">Field Label (Display):</label>
-                        <input type="text" id="field_label" name="field_label" class="form-control" 
-                               value="{{ field_config.label }}" required>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="field_type" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Field Type:</label>
+                            <select id="field_type" name="field_type" class="form-control" required onchange="toggleOptions()"
+                                    style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer;"
+                                    onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                    onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                                <option value="text" {% if field_config.type == 'text' %}selected{% endif %}>Text Input</option>
+                                <option value="date" {% if field_config.type == 'date' %}selected{% endif %}>Date Input</option>
+                                <option value="dropdown" {% if field_config.type == 'dropdown' %}selected{% endif %}>Dropdown (Single Select)</option>
+                                <option value="multiselect" {% if field_config.type == 'multiselect' %}selected{% endif %}>Multi-Select</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="field_type">Field Type:</label>
-                        <select id="field_type" name="field_type" class="form-control" required onchange="toggleOptions()">
-                            <option value="text" {% if field_config.type == 'text' %}selected{% endif %}>Text Input</option>
-                            <option value="date" {% if field_config.type == 'date' %}selected{% endif %}>Date Input</option>
-                            <option value="dropdown" {% if field_config.type == 'dropdown' %}selected{% endif %}>Dropdown (Single Select)</option>
-                            <option value="multiselect" {% if field_config.type == 'multiselect' %}selected{% endif %}>Multi-Select</option>
-                        </select>
-                    </div>
+                
+                <div class="form-group" id="options_group" style="margin-bottom: 0;">
+                    <label for="options" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Options (for dropdown/multiselect):</label>
+                    <textarea id="options" name="options" class="form-control" rows="3" 
+                              placeholder="Option 1, Option 2, Option 3"
+                              style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; resize: vertical; font-family: inherit;"
+                              onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                              onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">{{ field_config.get('options', [])|join(', ') }}</textarea>
+                    <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Separate options with commas</small>
                 </div>
-            </div>
+            </fieldset>
             
-            <div class="form-group" id="options_group">
-                <label for="options">Options (for dropdown/multiselect):</label>
-                <textarea id="options" name="options" class="form-control" rows="3" 
-                          placeholder="Option 1, Option 2, Option 3">{{ field_config.get('options', [])|join(', ') }}</textarea>
-                <small style="color: #666; font-size: 12px;">Separate options with commas</small>
-            </div>
-            
-            <div class="form-group text-right">
-                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Update Field</button>
+            <div class="form-group text-right" style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e8ecef; margin-bottom: 0;">
+                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3); transition: all 0.2s ease;">Update Field</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h3>Current Configuration</h3>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; border: none;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px;">
+            📊 Current Configuration
+        </h3>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 28px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-            <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #f8fcff 0%, #e8f4ff 100%); border-radius: 8px; border-left: 4px solid #0066cc; box-shadow: 0 2px 8px rgba(0,102,204,0.1); transition: all 0.3s ease;"
+                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,102,204,0.2)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,102,204,0.1)'">
                 <div style="font-size: 11px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600;">Field Name</div>
-                <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">{{ field_name }}</div>
+                <div style="font-size: 16px; font-weight: 600; color: #0066cc;">{{ field_name }}</div>
             </div>
             
-            <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 8px; border-left: 4px solid #28a745; box-shadow: 0 2px 8px rgba(40,167,69,0.1); transition: all 0.3s ease;"
+                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(40,167,69,0.2)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(40,167,69,0.1)'">
                 <div style="font-size: 11px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600;">Display Label</div>
-                <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">{{ field_config.label }}</div>
+                <div style="font-size: 16px; font-weight: 600; color: #155724;">{{ field_config.label }}</div>
             </div>
             
-            <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-radius: 8px; border-left: 4px solid #ffc107; box-shadow: 0 2px 8px rgba(255,193,7,0.1); transition: all 0.3s ease;"
+                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(255,193,7,0.2)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255,193,7,0.1)'">
                 <div style="font-size: 11px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600;">Field Type</div>
-                <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">{{ field_config.type|title }}</div>
+                <div style="font-size: 16px; font-weight: 600; color: #856404;">{{ field_config.type|title }}</div>
             </div>
             
-            <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border-radius: 8px; border-left: 4px solid #17a2b8; box-shadow: 0 2px 8px rgba(23,162,184,0.1); transition: all 0.3s ease;"
+                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(23,162,184,0.2)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(23,162,184,0.1)'">
                 <div style="font-size: 11px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600;">Options</div>
-                <div style="font-size: 14px; font-weight: 500; color: #2c3e50; line-height: 1.6;">
+                <div style="font-size: 14px; font-weight: 500; color: #0c5460; line-height: 1.6;">
                     {% if field_config.get('options') %}
                         {{ field_config.options|join(', ') }}
                     {% else %}
@@ -90,16 +128,22 @@
         </div>
     </div>
 </div>
-<div class="card">
-    <div class="card-header">
-        <h3>Danger Zone</h3>
+
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #f5c6cb; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24; padding: 16px 20px; border-radius: 8px 8px 0 0; border: none;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #721c24; display: flex; align-items: center; gap: 8px;">
+            ⚠️ Danger Zone
+        </h3>
     </div>
-    <div class="card-body">
-        <p><strong>Delete Field:</strong> This will remove the field from all packages. This action cannot be undone.</p>
+    <div class="card-body" style="padding: 24px;">
+        <p style="margin-bottom: 20px; color: #721c24; font-size: 14px; line-height: 1.6;">
+            <strong>Delete Field:</strong> This will permanently remove the field from all packages. This action cannot be undone.
+        </p>
         <a href="{{ url_for('delete_field_config', field_name=field_name) }}" 
            class="btn btn-danger"
-           onclick="return confirm('Are you sure you want to permanently delete field {{ field_name }}? This will remove it from all packages and cannot be undone.')">
-           Delete Field
+           style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3); transition: all 0.2s ease;"
+           onclick="return confirm('⚠️ Are you sure you want to permanently delete field {{ field_name }}? This will remove it from all packages and cannot be undone.')">
+           🗑️ Delete Field Permanently
         </a>
     </div>
 </div>

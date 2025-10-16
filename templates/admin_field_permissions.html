@@ -4,66 +4,63 @@
 
 {% block content %}
 
-<div class="card">
-    <div style="background: #f8f9fa; border-left: 3px solid #0066cc; padding: 15px 20px; margin-top: 20px; border-radius: 4px;">
-        <div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap; font-size: 12px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
+<!-- Field Info Card -->
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div style="background: linear-gradient(135deg, #f8fcff 0%, #e8f4ff 100%); border-left: 4px solid #0066cc; padding: 20px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,102,204,0.1);">
+        <div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap; font-size: 13px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="color: #6c757d; font-weight: 500;">Field Name:</span>
-                <strong style="color: #2c3e50;">{{ field_name }}</strong>
+                <strong style="color: #0066cc; font-size: 14px;">{{ field_name }}</strong>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="color: #6c757d; font-weight: 500;">Label:</span>
-                <strong style="color: #2c3e50;">{{ field_config.label }}</strong>
+                <strong style="color: #2c3e50; font-size: 14px;">{{ field_config.label }}</strong>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="color: #6c757d; font-weight: 500;">Type:</span>
-                <strong style="color: #2c3e50;">{{ field_config.type|title }}</strong>
+                <span style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">{{ field_config.type|title }}</span>
             </div>
             {% if field_config.get('options') %}
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="color: #6c757d; font-weight: 500;">Options:</span>
-                <strong style="color: #2c3e50;">{{ field_config.options|join(', ') }}</strong>
+                <strong style="color: #2c3e50; font-size: 13px;">{{ field_config.options|join(', ') }}</strong>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
 
-
-
-<div class="card">
-    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Field Configuration</h3>
+<!-- Permissions Configuration Card -->
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Field Permissions</h2>
+            </div>
         </div>
     </div>
-    <div class="card-body">
-        <div class="alert alert-info">
-            <strong>Configure who can read, edit, and delete this field.</strong><br>
-        </div>
+    
+    <div class="card-body" style="padding: 28px;">
         
         <form method="POST">
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto; border: 2px solid #e8ecef; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
                 <table class="table" style="margin-bottom: 0;">
                     <thead>
-                        <tr>
-                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">User</th>
-                            <th style="padding: 16px; font-size: 13px; font-weight: 600; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: center; width: 100px;">Role</th>
-                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                                    <span style="font-size: 20px;"></span>
+                        <tr style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">User</th>
+                            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; text-align: center; width: 120px;">Role</th>
+                            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; text-align: center; width: 120px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                                     <span>Read</span>
                                 </div>
                             </th>
-                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                                    <span style="font-size: 20px;"></span>
+                            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; text-align: center; width: 120px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                                     <span>Write</span>
                                 </div>
                             </th>
-                            <th style="padding: 16px; font-size: 13px; font-weight: 600; text-align: center; width: 100px;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                                    <span style="font-size: 20px;"></span>
+                            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; text-align: center; width: 120px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                                     <span>Delete</span>
                                 </div>
                             </th>
@@ -71,39 +68,42 @@
                     </thead>
                     <tbody>
                         {% for user in users %}
-                        <tr {% if user.role == 'admin' %}style="background-color: #f8f9fa; border-left: 4px solid #17a2b8;"{% else %}style="border-left: 4px solid transparent;"{% endif %}>
-                            <td style="padding: 20px 16px; vertical-align: middle;">
+                        <tr {% if user.role == 'admin' %}style="background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); border-left: 4px solid #17a2b8;"{% else %}style="border-bottom: 1px solid #e8ecef; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f0f7ff'" onmouseout="this.style.backgroundColor=''"{% endif %}>
+                            <td style="padding: 20px 24px; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; gap: 4px;">
                                     <strong style="font-size: 14px; color: #2c3e50;">{{ user.name }}</strong>
                                     <small style="color: #6c757d; font-size: 12px;">@{{ user.username }}</small>
                                 </div>
                             </td>
-                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
+                            <td style="padding: 20px 24px; text-align: center; vertical-align: middle;">
                                 <span class="{% if user.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}" 
-                                    style="padding: 6px 12px; font-size: 11px; font-weight: 600;">
+                                    style="padding: 6px 14px; font-size: 11px; font-weight: 600; border-radius: 16px; display: inline-block; letter-spacing: 0.3px;">
                                     {{ user.role|title }}
                                 </span>
                             </td>
-                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
-                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                            <td style="padding: 20px 24px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; transition: all 0.2s; {% if user.role == 'admin' %}background: #d1ecf1;{% endif %}"
+                                       {% if user.role != 'admin' %}onmouseover="this.style.backgroundColor='#d1ecf1'" onmouseout="this.style.backgroundColor=''"{% endif %}>
                                     <input type="checkbox" name="read_{{ user.username }}" value="1"
-                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        style="width: 22px; height: 22px; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; accent-color: #17a2b8;"
                                         {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('read', False) %}checked{% endif %}
                                         {% if user.role == 'admin' %}disabled{% endif %}>
                                 </label>
                             </td>
-                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
-                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                            <td style="padding: 20px 24px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; transition: all 0.2s; {% if user.role == 'admin' %}background: #cce5ff;{% endif %}"
+                                       {% if user.role != 'admin' %}onmouseover="this.style.backgroundColor='#cce5ff'" onmouseout="this.style.backgroundColor=''"{% endif %}>
                                     <input type="checkbox" name="write_{{ user.username }}" value="1"
-                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        style="width: 22px; height: 22px; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; accent-color: #0066cc;"
                                         {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('write', False) %}checked{% endif %}
                                         {% if user.role == 'admin' %}disabled{% endif %}>
                                 </label>
                             </td>
-                            <td style="padding: 20px 16px; text-align: center; vertical-align: middle;">
-                                <label style="margin: 0; cursor: pointer; display: inline-block;">
+                            <td style="padding: 20px 24px; text-align: center; vertical-align: middle;">
+                                <label style="margin: 0; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; transition: all 0.2s; {% if user.role == 'admin' %}background: #f8d7da;{% endif %}"
+                                       {% if user.role != 'admin' %}onmouseover="this.style.backgroundColor='#f8d7da'" onmouseout="this.style.backgroundColor=''"{% endif %}>
                                     <input type="checkbox" name="delete_{{ user.username }}" value="1"
-                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        style="width: 22px; height: 22px; cursor: {% if user.role == 'admin' %}not-allowed{% else %}pointer{% endif %}; accent-color: #dc3545;"
                                         {% if user.role == 'admin' or current_permissions.get(user.username, {}).get('delete', False) %}checked{% endif %}
                                         {% if user.role == 'admin' %}disabled{% endif %}>
                                 </label>
@@ -114,9 +114,17 @@
                 </table>
             </div>
             
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: right;">
-                <a href="{{ url_for('admin_config') }}" class="btn btn-secondary" style="margin-right: 10px;">Cancel</a>
-                <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600;">Save Permissions</button>
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e8ecef; text-align: right; display: flex; justify-content: flex-end; gap: 12px;">
+                <a href="{{ url_for('admin_config') }}" 
+                   class="btn btn-secondary" 
+                   style="padding: 12px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">
+                   Cancel
+                </a>
+                <button type="submit" 
+                        class="btn btn-primary" 
+                        style="padding: 12px 32px; font-size: 14px; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3); transition: all 0.2s ease;">
+                    Save Permissions
+                </button>
             </div>
         </form>
     </div>

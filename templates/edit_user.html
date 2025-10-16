@@ -3,32 +3,49 @@
 {% block title %}Edit User - Ticketing Tool{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>Edit User: {{ username }}</h2>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Edit User Profile</h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 400;">Username: <strong style="font-weight: 600;">{{ username }}</strong></p>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 28px;">
         <form method="POST">
-            <fieldset class="field-group">
-                <legend>User Information</legend>
+            <fieldset class="field-group" style="background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%); border: 2px solid #e0e4e8; padding: 24px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <legend style="color: #2c3e50; font-size: 15px; font-weight: 600; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+                User Information
+                </legend>
+                
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="username">Username:</label>
+                            <label for="username" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Username:</label>
                             <input type="text" id="username" name="username" class="form-control" 
                                 value="{{ username }}" required
-                                {% if username == 'admin' %}readonly title="Admin username cannot be changed"{% endif %}>
+                                {% if username == 'admin' %}readonly title="Admin username cannot be changed"{% endif %}
+                                style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; {% if username == 'admin' %}background: #f8f9fa; cursor: not-allowed;{% else %}background: white;{% endif %} transition: all 0.2s ease;"
+                                {% if username != 'admin' %}
+                                onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'"
+                                {% endif %}>
                             {% if username == 'admin' %}
-                            <small style="color: #666; font-size: 12px;">Admin username cannot be changed</small>
+                            <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">🔒 Admin username cannot be changed</small>
                             {% endif %}
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="password">Password:</label>
+                            <label for="password" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Password:</label>
                             <input type="password" id="password" name="password" class="form-control" 
-                                value="{{ user_data.password }}" required>
-                            <small style="color: #666; font-size: 12px;">Leave as-is or enter new password</small>
+                                value="{{ user_data.password }}" required
+                                placeholder="Enter new password"
+                                style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                            <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Leave as-is or enter new password</small>
                         </div>
                     </div>
                 </div>
@@ -36,15 +53,22 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="name">Full Name:</label>
+                            <label for="name" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Full Name:</label>
                             <input type="text" id="name" name="name" class="form-control" 
-                                value="{{ user_data.name }}" required>
+                                value="{{ user_data.name }}" required
+                                placeholder="Enter full name"
+                                style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="role">Role:</label>
-                            <select id="role" name="role" class="form-control" required>
+                            <label for="role" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Role:</label>
+                            <select id="role" name="role" class="form-control" required
+                                    style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer;"
+                                    onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                    onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 <option value="user" {% if user_data.role == 'user' %}selected{% endif %}>User</option>
                                 <option value="admin" {% if user_data.role == 'admin' %}selected{% endif %}>Admin</option>
                             </select>
@@ -53,31 +77,41 @@
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px 16px; background: white; border: 2px solid #e8ecef; border-radius: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 2px 8px rgba(0,102,204,0.1)'"
+                           onmouseout="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                         <input type="checkbox" name="can_assign" value="1" 
-                            {% if user_data.can_assign %}checked{% endif %}>
-                        Can assign tasks to others
+                            {% if user_data.can_assign %}checked{% endif %}
+                            style="width: 18px; height: 18px; cursor: pointer; accent-color: #0066cc;">
+                        <span style="font-size: 13px; color: #2c3e50; font-weight: 500;">Can assign tasks to others</span>
                     </label>
                 </div>
             </fieldset>
             
-            <div class="form-group text-right">
-                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Update User</button>
+            <div class="form-group text-right" style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e8ecef; margin-bottom: 0;">
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3); transition: all 0.2s ease;">Update User</button>
             </div>
         </form>
+    </div>
+</div>
 
 {% if username != 'admin' %}
-<div class="card">
-    <div class="card-header">
-        <h3>Danger Zone</h3>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #f5c6cb; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24; padding: 16px 20px; border-radius: 8px 8px 0 0; border: none;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #721c24; display: flex; align-items: center; gap: 8px;">
+        Danger Zone
+        </h3>
     </div>
-    <div class="card-body">
-        <p><strong>Delete User:</strong> This action cannot be undone.</p>
+    <div class="card-body" style="padding: 24px;">
+        <p style="margin-bottom: 20px; color: #721c24; font-size: 14px; line-height: 1.6;">
+            <strong>Delete User:</strong> This action will permanently remove the user account. This cannot be undone.
+        </p>
         <a href="{{ url_for('delete_user', username=username) }}" 
            class="btn btn-danger"
-           onclick="return confirm('Are you sure you want to permanently delete user {{ username }}? This action cannot be undone.')">
-           Delete User
+           style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3); transition: all 0.2s ease;"
+           onclick="return confirm('⚠️ Are you sure you want to permanently delete user {{ username }}? This action cannot be undone.')">
+           🗑️ Delete User Permanently
         </a>
     </div>
 </div>

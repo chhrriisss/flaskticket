@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Quick Stats at the top (Admin only) -->
 {% if session.role == 'admin' %}
-<div class="card">
+<div class="card" style="margin-bottom: 24px;">
     <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Status Overview</h3>
@@ -43,30 +43,30 @@
             {% endif %}
         {% endfor %}
         
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">{{ packages|length }}</div>
-                <div class="stat-label">Total Packages</div>
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #6c757d; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div class="stat-value" style="font-size: 32px; font-weight: 700; color: #2c3e50; margin-bottom: 8px;">{{ packages|length }}</div>
+                <div class="stat-label" style="font-size: 12px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.8px; font-weight: 600;">Total Packages</div>
             </div>
             
-            <div class="stat-card" style="border-color: #6c757d;">
-                <div class="stat-value" style="color: #6c757d;">{{ counts.not_started }}</div>
-                <div class="stat-label">Not Started</div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #6c757d; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div class="stat-value" style="font-size: 32px; font-weight: 700; color: #6c757d; margin-bottom: 8px;">{{ counts.not_started }}</div>
+                <div class="stat-label" style="font-size: 12px; text-transform: uppercase; color: #6c757d; letter-spacing: 0.8px; font-weight: 600;">Not Started</div>
             </div>
             
-            <div class="stat-card stat-ongoing">
-                <div class="stat-value">{{ counts.ongoing }}</div>
-                <div class="stat-label">Ongoing</div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div class="stat-value" style="font-size: 32px; font-weight: 700; color: #155724; margin-bottom: 8px;">{{ counts.ongoing }}</div>
+                <div class="stat-label" style="font-size: 12px; text-transform: uppercase; color: #155724; letter-spacing: 0.8px; font-weight: 600;">Ongoing</div>
             </div>
             
-            <div class="stat-card stat-completed">
-                <div class="stat-value">{{ counts.completed }}</div>
-                <div class="stat-label">Completed</div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #17a2b8; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div class="stat-value" style="font-size: 32px; font-weight: 700; color: #0c5460; margin-bottom: 8px;">{{ counts.completed }}</div>
+                <div class="stat-label" style="font-size: 12px; text-transform: uppercase; color: #0c5460; letter-spacing: 0.8px; font-weight: 600;">Completed</div>
             </div>
             
-            <div class="stat-card" style="border-color: #dc3545;">
-                <div class="stat-value" style="color: #dc3545;">{{ counts.delayed }}</div>
-                <div class="stat-label">Delayed</div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div class="stat-value" style="font-size: 32px; font-weight: 700; color: #721c24; margin-bottom: 8px;">{{ counts.delayed }}</div>
+                <div class="stat-label" style="font-size: 12px; text-transform: uppercase; color: #721c24; letter-spacing: 0.8px; font-weight: 600;">Delayed</div>
             </div>
         </div>
     </div>
@@ -74,116 +74,169 @@
 {% endif %}
 
 <!-- Packages Table -->
-<div class="card">
-        <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div>
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Packages Dashboard</h2>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <!-- Export Buttons -->
-                    <a href="{{ url_for('export_excel', filter_user=request.args.get('filter_user', 'all')) }}" 
-                    class="btn btn-primary" 
-                    style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3); text-decoration: none;">
-                         Export Excel
-                    </a>
-                    {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
-                    <a href="{{ url_for('create_package') }}" 
-                    class="btn btn-success" 
-                    style="font-size: 12px; padding: 8px 16px; font-weight: 600; border: none; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3); text-decoration: none;">
-                        + Create Package
-                    </a>
-                    {% endif %}
+<div class="card" style="box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: none; border-radius: 8px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 18px 24px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Packages Dashboard</h2>
                 </div>
             </div>
-        </div>
-<!-- User Filter Section - ADD THIS ENTIRE BLOCK -->
-        {% if session.role == 'admin' %}
-        <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
-            <form method="GET" action="{{ url_for('dashboard') }}" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <label style="font-size: 13px; font-weight: 600; color: #2c3e50; margin: 0;">
-                    <span style="margin-right: 8px;"></span>Filter by User:
-                </label>
-                <select name="filter_user" 
-                        class="form-control" 
-                        style="width: auto; min-width: 250px; padding: 8px 12px; font-size: 13px; border: 2px solid #e0e0e0; border-radius: 4px;" 
-                        onchange="this.form.submit()">
-                    <option value="all" {% if request.args.get('filter_user', 'all') == 'all' %}selected{% endif %}>
-                        All Packages (All Users)
-                    </option>
-                    {% for username, user_data in users.items() %}
-                        {% if username != 'admin' %}
-                        <option value="{{ username }}" 
-                                {% if request.args.get('filter_user') == username %}selected{% endif %}>
-                             {{ user_data.name }} (@{{ username }})
-                        </option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-                {% if request.args.get('filter_user') and request.args.get('filter_user') != 'all' %}
-                <a href="{{ url_for('dashboard') }}" 
-                class="btn btn-secondary" 
-                style="padding: 6px 14px; font-size: 12px; text-decoration: none;">
-                    ✕ Clear Filter
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ url_for('export_excel', filter_user=request.args.get('filter_user', 'all')) }}" 
+                class="btn btn-primary" 
+                style="font-size: 13px; padding: 10px 20px; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); box-shadow: none; background: rgba(255,255,255,0.15); text-decoration: none; border-radius: 6px; transition: all 0.2s ease;">
+                    Export Excel
                 </a>
-                <span style="font-size: 12px; color: #6c757d; margin-left: 10px;">
-                    Showing packages assigned to: <strong>{{ users[request.args.get('filter_user')].name }}</strong>
-                </span>
+                {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
+                <a href="{{ url_for('create_package') }}" 
+                class="btn btn-success" 
+                style="font-size: 13px; padding: 10px 20px; font-weight: 600; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.2); text-decoration: none; border-radius: 6px; background: #28a745; transition: all 0.2s ease;">
+                    Create Package
+                </a>
                 {% endif %}
-            </form>
+            </div>
         </div>
-        {% endif %}
+    </div>
 
-    <div class="card-body">
+    <!-- User Filter Section -->
+    {% if session.role == 'admin' %}
+    <div style="padding: 16px 24px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-bottom: 1px solid #e8ecef;">
+        <form method="GET" action="{{ url_for('dashboard') }}" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <label style="font-size: 14px; font-weight: 600; color: #2c3e50; margin: 0;">
+                Filter by User:
+            </label>
+            <select name="filter_user" 
+                    class="form-control" 
+                    style="width: auto; min-width: 280px; padding: 10px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 6px; background: white; transition: all 0.2s ease;" 
+                    onchange="this.form.submit()">
+                <option value="all" {% if request.args.get('filter_user', 'all') == 'all' %}selected{% endif %}>
+                    All Packages (All Users)
+                </option>
+                {% for username, user_data in users.items() %}
+                    {% if username != 'admin' %}
+                    <option value="{{ username }}" 
+                            {% if request.args.get('filter_user') == username %}selected{% endif %}>
+                        {{ user_data.name }} (@{{ username }})
+                    </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            {% if request.args.get('filter_user') and request.args.get('filter_user') != 'all' %}
+            <a href="{{ url_for('dashboard') }}" 
+            class="btn btn-secondary" 
+            style="padding: 8px 16px; font-size: 12px; text-decoration: none; border-radius: 6px; background: #6c757d; color: white; transition: all 0.2s ease;">
+                Clear Filter
+            </a>
+            <span style="font-size: 13px; color: #495057; margin-left: 8px; padding: 8px 16px; background: #e9ecef; border-radius: 6px; font-weight: 500;">
+                Showing <strong style="color: #0066cc;">{{ packages|length }}</strong> package{{ 's' if packages|length != 1 else '' }} for: <strong style="color: #0066cc;">{{ users[request.args.get('filter_user')].name }}</strong>
+            </span>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card-body" style="padding: 0;">
         {% if packages %}
-        <div class="table-container">
-            <table class="table dashboard-table">
+        <div class="table-container" style="overflow-x: auto; border-radius: 0 0 8px 8px;">
+            <table class="table dashboard-table" style="margin-bottom: 0; border-collapse: separate; border-spacing: 0;">
                 <thead>
-                    <tr>
-                        <th>Package ID</th>
-                        <th>Status</th>
+                    <tr style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">Package ID</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">Status</th>
                         {% for field_name, field_config in config.fields.items() %}
                         {% if field_name not in ['STATUS', 'status'] %}
-                        <th>{{ field_config.label }}</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">{{ field_config.label }}</th>
                         {% endif %}
                         {% endfor %}
-                        <th>Assigned Users</th>
-                        <th>Created By</th>
-                        <th>Created</th>
-                        <th style="position: sticky; right: 0; z-index: 15; background-color: #f8f9fa;">Actions</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">Assigned Users</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">Created By</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; background: #f8f9fa; z-index: 10;">Created</th>
+                        <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6; position: sticky; right: 0; z-index: 15; background: #f8f9fa;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for package_id, package in packages.items() %}
-                    <tr>                   
-                        <td><strong>{{ package_id }}</strong></td> 
+                    <tr style="border-bottom: 1px solid #e8ecef; transition: all 0.2s ease;" 
+                        onmouseover="this.style.backgroundColor='#f0f7ff'; this.style.transform='translateX(2px)'" 
+                        onmouseout="this.style.backgroundColor=''; this.style.transform=''">                   
+                        <td style="padding: 18px 20px; vertical-align: middle; font-size: 13px;">
+                            <strong style="color: #0066cc; font-weight: 600;">{{ package_id }}</strong>
+                        </td> 
                         
-                        <td>
-                            {% if package.data_timeline %}
-                                {% set latest_column = package.gantt_columns[-1] %}
-                                {% set status_value = package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')).lower() %}
-                            {% else %}
-                                {% set status_value = package.data.get('STATUS', package.data.get('status', '')).lower() %}
-                            {% endif %}
-                            {% if status_value %}
-                            <span class="status-{{ status_value }}">
+                        <td style="padding: 18px 20px; vertical-align: middle;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 {% if package.data_timeline %}
-                                    {{ package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')) }}
+                                    {% set latest_column = package.gantt_columns[-1] %}
+                                    {% set status_value = package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')).lower() %}
+                                    {% set target_date = package.data_timeline[latest_column].get('COMMERCIAL TARGET DATE', '') %}
+                                    {% set actual_closure = package.data_timeline[latest_column].get('ACTUAL CLOSURE DATE', '') %}
                                 {% else %}
-                                    {{ package.data.get('STATUS', package.data.get('status', '')) }}
+                                    {% set status_value = package.data.get('STATUS', package.data.get('status', '')).lower() %}
+                                    {% set target_date = package.data.get('COMMERCIAL TARGET DATE', '') %}
+                                    {% set actual_closure = package.data.get('ACTUAL CLOSURE DATE', '') %}
                                 {% endif %}
-                            </span>
-                            {% else %}
-                            <span style="color: #999;">-</span>
-                            {% endif %}
+                                
+                                {# Calculate urgency #}
+                                {% set today = '2025-10-14' %}
+                                {% set is_overdue = false %}
+                                {% set days_overdue = 0 %}
+                                
+                                {% if target_date and not actual_closure and status_value != 'completed' %}
+                                    {% if target_date < today %}
+                                        {% set is_overdue = true %}
+                                        {# Calculate days - simplified for display #}
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {# Urgency Indicator #}
+                                {% if is_overdue %}
+                                <div style="position: relative; display: inline-flex;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);" title="Overdue!">
+                                        <span style="color: white; font-size: 14px; font-weight: 700;">!</span>
+                                    </span>
+                                </div>
+                                {% elif target_date and not actual_closure %}
+                                    {% set date_parts = target_date.split('-') %}
+                                    {% set today_parts = today.split('-') %}
+                                    {% if date_parts|length == 3 and today_parts|length == 3 %}
+                                        {% set target_year = date_parts[0]|int %}
+                                        {% set target_month = date_parts[1]|int %}
+                                        {% set target_day = date_parts[2]|int %}
+                                        {% set today_year = today_parts[0]|int %}
+                                        {% set today_month = today_parts[1]|int %}
+                                        {% set today_day = today_parts[2]|int %}
+                                        
+                                        {# Check if within 7 days #}
+                                        {% if (target_year == today_year and target_month == today_month and target_day - today_day <= 7 and target_day - today_day > 0) %}
+                                        <div style="position: relative; display: inline-flex;">
+                                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); border-radius: 50%; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);" title="Due soon!">
+                                                <span style="color: #856404; font-size: 14px; font-weight: 700;">⚠</span>
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {# Status Badge #}
+                                {% if status_value %}
+                                <span class="status-{{ status_value }}" style="padding: 6px 14px; border-radius: 16px; font-size: 11px; font-weight: 600; display: inline-block; letter-spacing: 0.3px;">
+                                    {% if package.data_timeline %}
+                                        {{ package.data_timeline[latest_column].get('STATUS', package.data_timeline[latest_column].get('status', '')) }}
+                                    {% else %}
+                                        {{ package.data.get('STATUS', package.data.get('status', '')) }}
+                                    {% endif %}
+                                </span>
+                                {% else %}
+                                <span style="color: #adb5bd; font-size: 13px; font-style: italic;">Not set</span>
+                                {% endif %}
+                            </div>
                         </td>
                         
                         <!-- Other fields -->
                         {% for field_name, field_config in config.fields.items() %}
                         {% if field_name not in ['STATUS', 'status'] %}
-                        <td>
+                        <td style="padding: 18px 20px; vertical-align: middle; font-size: 13px; color: #495057;">
                             {% if field_config.type == 'multiselect' %}
                                 {% if package.data_timeline %}
                                     {% set latest_column = package.gantt_columns[-1] %}
@@ -192,9 +245,9 @@
                                     {% set field_value = package.data.get(field_name, []) %}
                                 {% endif %}
                                 {% if field_value %}
-                                    {{ field_value|join(', ') }}
+                                    <span style="color: #495057; font-weight: 500;">{{ field_value|join(', ') }}</span>
                                 {% else %}
-                                    <span style="color: #999;">-</span>
+                                    <span style="color: #adb5bd; font-style: italic;">-</span>
                                 {% endif %}
                             {% else %}
                                 {% if package.data_timeline %}
@@ -203,23 +256,28 @@
                                 {% else %}
                                     {% set field_value = package.data.get(field_name, '') %}
                                 {% endif %}
-                                {{ field_value if field_value else '-' }}
+                                {% if field_value %}
+                                    <span style="color: #495057; font-weight: 500;">{{ field_value }}</span>
+                                {% else %}
+                                    <span style="color: #adb5bd; font-style: italic;">-</span>
+                                {% endif %}
                             {% endif %}
                         </td>
                         {% endif %}
                         {% endfor %}
                         
-                        <td>
-                            <div class="user-badges">
+                        <td style="padding: 18px 20px; vertical-align: middle;">
+                            <div class="user-badges" style="display: flex; flex-wrap: wrap; gap: 6px;">
                                 {% for user in package.assigned_users %}
-                                <span class="user-badge">{{ user }}</span>
+                                <span class="user-badge" style="background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #495057; border: 1px solid #dee2e6;">{{ user }}</span>
                                 {% endfor %}
                             </div>
                         </td>
-                        <td>{{ package.created_by }}</td>
-                        <td style="white-space: nowrap;">{{ package.created_at[:10] if package.created_at else '-' }}</td>
-                        <!-- Actions column (moved to last position) -->
-                        <td style="position: sticky; right: 0; z-index: 10; background-color: white; box-shadow: -2px 0 4px rgba(0,0,0,0.05);">
+                        <td style="padding: 18px 20px; vertical-align: middle; font-size: 13px; color: #6c757d;">{{ package.created_by }}</td>
+                        <td style="padding: 18px 20px; vertical-align: middle; white-space: nowrap; font-size: 13px; color: #6c757d;">{{ package.created_at[:10] if package.created_at else '-' }}</td>
+                        
+                        <!-- Actions column -->
+                        <td style="padding: 18px 20px; position: sticky; right: 0; z-index: 10; background: white; vertical-align: middle; box-shadow: -4px 0 8px rgba(0,0,0,0.05);">
                             {% set pkg_perms = package.user_permissions.get(session.username, {}) %}
                             {% set can_edit = fresh_role == 'admin' %}
                             {% set can_delete = fresh_role == 'admin' %}
@@ -238,19 +296,26 @@
                                 {% endif %}
                             {% endif %}
                             
-                            <div class="action-buttons">
+                            <div class="action-buttons" style="display: flex; gap: 8px; flex-wrap: nowrap;">
                                 {% if can_edit and (fresh_role == 'admin' or session.username in package.assigned_users) %}
-                                <a href="{{ url_for('edit_package', package_id=package_id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                <a href="{{ url_for('edit_package', package_id=package_id) }}" 
+                                class="btn btn-primary btn-sm" 
+                                style="padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; text-decoration: none; white-space: nowrap; transition: all 0.2s ease;">
+                                Edit
+                                </a>
                                 {% endif %}
                                 
                                 {% if can_delete %}
                                 <a href="{{ url_for('delete_package', package_id=package_id) }}" 
                                 class="btn btn-danger btn-sm"
-                                onclick="return confirm('Delete this package?')">Delete</a>
+                                style="padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; text-decoration: none; white-space: nowrap; transition: all 0.2s ease;"
+                                onclick="return confirm('Delete this package?')">
+                                Delete
+                                </a>
                                 {% endif %}
                                 
                                 {% if not can_edit and not can_delete %}
-                                <span class="view-only-badge">View Only</span>
+                                <span class="view-only-badge" style="color: #6c757d; font-size: 12px; font-weight: 500; padding: 6px 12px; background: #f8f9fa; border-radius: 6px; font-style: italic;">View Only</span>
                                 {% endif %}
                             </div>
                         </td>
@@ -260,18 +325,22 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📦</div>
-            <h3>No packages yet</h3>
-            <p>
+        <div class="empty-state" style="text-align: center; padding: 80px 40px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+            <div class="empty-state-icon" style="font-size: 72px; margin-bottom: 24px; opacity: 0.6; filter: grayscale(20%);">📦</div>
+            <h3 style="font-size: 22px; font-weight: 600; color: #2c3e50; margin-bottom: 12px; letter-spacing: -0.3px;">No packages yet</h3>
+            <p style="font-size: 15px; color: #6c757d; margin-bottom: 32px; line-height: 1.6;">
                 {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}    
-                Get started by creating your first package.
+                Get started by creating your first package to begin tracking.
                 {% else %}
                 Contact an administrator to assign packages to you.
                 {% endif %}
             </p>
             {% if fresh_permissions.get('package_create', False) or session.role == 'admin' %}
-            <a href="{{ url_for('create_package') }}" class="btn btn-success">Create Package</a>
+            <a href="{{ url_for('create_package') }}" 
+            class="btn btn-success" 
+            style="padding: 12px 32px; font-size: 15px; font-weight: 600; border-radius: 6px; text-decoration: none; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); transition: all 0.3s ease;">
+            Create Your First Package
+            </a>
             {% endif %}
         </div>
         {% endif %}

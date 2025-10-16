@@ -3,37 +3,46 @@
 {% block title %}User Management - Ticketing Tool{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
-        <div style="display: flex; align-items: center; gap: 12px;">
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 16px;">
             <div>
-                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">User Management</h2>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">User Management</h2>
             </div>
         </div>
     </div>
-    <div class="card-body">
+    
+    <div class="card-body" style="padding: 28px;">
         <!-- Create User Form -->
-        <div class="card mb-3">
-            <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+        <div class="card mb-3" style="box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: none; border-radius: 8px; margin-bottom: 28px;">
+            <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #20873a 100%); color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; border: none;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Create New User</h3>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 24px;">
                 <form method="POST" action="{{ url_for('create_user') }}">
-                    <fieldset class="field-group">
-                        <legend>User Details</legend>
+                    <fieldset class="field-group" style="background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%); border: 2px solid #e0e4e8; padding: 24px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <legend style="color: #2c3e50; font-size: 15px; font-weight: 600; padding: 0 12px;">User Details</legend>
                         <div class="form-row">
                             <div class="form-col">
                                 <div class="form-group">
-                                    <label for="username">Username:</label>
-                                    <input type="text" id="username" name="username" class="form-control" required>
+                                    <label for="username" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Username:</label>
+                                    <input type="text" id="username" name="username" class="form-control" required
+                                           placeholder="Enter username"
+                                           style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                           onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                           onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 </div>
                             </div>
                             <div class="form-col">
                                 <div class="form-group">
-                                    <label for="password">Password:</label>
-                                    <input type="password" id="password" name="password" class="form-control" required>
+                                    <label for="password" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Password:</label>
+                                    <input type="password" id="password" name="password" class="form-control" required
+                                           placeholder="Enter password"
+                                           style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                           onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                           onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 </div>
                             </div>
                         </div>
@@ -41,14 +50,21 @@
                         <div class="form-row">
                             <div class="form-col">
                                 <div class="form-group">
-                                    <label for="name">Full Name:</label>
-                                    <input type="text" id="name" name="name" class="form-control" required>
+                                    <label for="name" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Full Name:</label>
+                                    <input type="text" id="name" name="name" class="form-control" required
+                                           placeholder="Enter full name"
+                                           style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                           onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                           onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 </div>
                             </div>
                             <div class="form-col">
                                 <div class="form-group">
-                                    <label for="role">Role:</label>
-                                    <select id="role" name="role" class="form-control" required>
+                                    <label for="role" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">Role:</label>
+                                    <select id="role" name="role" class="form-control" required
+                                            style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer;"
+                                            onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                            onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                         <option value="user">User</option>
                                         <option value="admin">Admin</option>
                                     </select>
@@ -57,82 +73,95 @@
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label>
-                                <input type="checkbox" name="can_assign" value="1">
-                                Can assign tasks to others
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px 16px; background: white; border: 2px solid #e8ecef; border-radius: 8px; transition: all 0.2s;"
+                                   onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 2px 8px rgba(0,102,204,0.1)'"
+                                   onmouseout="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                                <input type="checkbox" name="can_assign" value="1" style="width: 18px; height: 18px; cursor: pointer; accent-color: #0066cc;">
+                                <span style="font-size: 13px; color: #2c3e50; font-weight: 500;">Can assign tasks to others</span>
                             </label>
                         </div>
                     </fieldset>
                     
-                    <div class="form-group text-right">
-                        <button type="submit" class="btn btn-success">Create User</button>
+                    <div class="form-group text-right" style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e8ecef; margin-bottom: 0;">
+                        <button type="submit" class="btn btn-success" style="padding: 12px 32px; font-size: 14px; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">Create User</button>
                     </div>
                 </form>
+            </div>
+        </div>
         
         <!-- Users List -->
-        <div class="card">
-            <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 12px 16px; border-radius: 6px 6px 0 0; border: none;">
+        <div class="card" style="box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: none; border-radius: 8px;">
+            <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; border: none;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: white;">Existing Users</h3>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0;">
                 {% if users %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Role</th>
-                            <th>Can Assign</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for username, user_data in users.items() %}
-                        <tr>
-                            <td><strong>{{ username }}</strong></td>
-                            <td>{{ user_data.name }}</td>
-                            <td>
-                                <span class="{% if user_data.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}">
-                                    {{ user_data.role|title }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if user_data.can_assign %}
-                                <span class="status-completed">Yes</span>
-                                {% else %}
-                                <span class="status-hold">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if username != 'admin' %}
-                                <a href="{{ url_for('edit_user', username=username) }}" 
-                                   class="btn btn-primary" 
-                                   style="font-size: 11px; padding: 4px 8px;">
-                                   Edit
-                                </a>
-                                <a href="{{ url_for('delete_user', username=username) }}" 
-                                   class="btn btn-danger" 
-                                   style="font-size: 11px; padding: 4px 8px;"
-                                   onclick="return confirm('Are you sure you want to delete user {{ username }}?')">
-                                   Delete
-                                </a>
-                                {% else %}
-                                <a href="{{ url_for('edit_user', username=username) }}" 
-                                   class="btn btn-primary" 
-                                   style="font-size: 11px; padding: 4px 8px;">
-                                   Edit
-                                </a>
-                                <span style="color: #999; font-size: 11px;">Cannot Delete</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="table" style="margin-bottom: 0;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">Username</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">Full Name</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">Role</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">Can Assign</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for username, user_data in users.items() %}
+                            <tr style="border-bottom: 1px solid #e8ecef; transition: all 0.2s ease;" 
+                                onmouseover="this.style.backgroundColor='#f0f7ff'" 
+                                onmouseout="this.style.backgroundColor=''">
+                                <td style="padding: 18px 20px; vertical-align: middle;">
+                                    <strong style="color: #0066cc; font-weight: 600; font-size: 13px;">{{ username }}</strong>
+                                </td>
+                                <td style="padding: 18px 20px; vertical-align: middle; font-size: 13px; color: #495057;">
+                                    {{ user_data.name }}
+                                </td>
+                                <td style="padding: 18px 20px; vertical-align: middle;">
+                                    <span class="{% if user_data.role == 'admin' %}status-completed{% else %}status-ongoing{% endif %}" style="padding: 6px 14px; border-radius: 16px; font-size: 11px; font-weight: 600; display: inline-block; letter-spacing: 0.3px;">
+                                        {{ user_data.role|title }}
+                                    </span>
+                                </td>
+                                <td style="padding: 18px 20px; vertical-align: middle;">
+                                    {% if user_data.can_assign %}
+                                    <span class="status-completed" style="padding: 6px 14px; border-radius: 16px; font-size: 11px; font-weight: 600; display: inline-block;">Yes</span>
+                                    {% else %}
+                                    <span class="status-hold" style="padding: 6px 14px; border-radius: 16px; font-size: 11px; font-weight: 600; display: inline-block;">No</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 18px 20px; vertical-align: middle;">
+                                    <div style="display: flex; gap: 8px;">
+                                        <a href="{{ url_for('edit_user', username=username) }}" 
+                                           class="btn btn-primary btn-sm" 
+                                           style="padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">
+                                           Edit
+                                        </a>
+                                        {% if username != 'admin' %}
+                                        <a href="{{ url_for('delete_user', username=username) }}" 
+                                           class="btn btn-danger btn-sm" 
+                                           style="padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;"
+                                           onclick="return confirm('Are you sure you want to delete user {{ username }}?')">
+                                           Delete
+                                        </a>
+                                        {% else %}
+                                        <span style="color: #6c757d; font-size: 11px; font-style: italic; padding: 6px 12px;">Cannot Delete</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                <div class="alert alert-info">No users found.</div>
+                <div class="empty-state" style="text-align: center; padding: 60px 40px;">
+                    <div class="empty-state-icon" style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">👥</div>
+                    <h3 style="font-size: 20px; color: #6c757d; margin-bottom: 10px;">No users found</h3>
+                    <p style="color: #6c757d;">Create your first user to get started.</p>
+                </div>
                 {% endif %}
             </div>
         </div>

@@ -3,46 +3,59 @@
 {% block title %}Create Package - Ticketing Tool{% endblock %}
 
 {% block content %}
-<div class="card">
-        <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; border: none;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div>
-                    <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Create New Package</h2>
-                </div>
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Create New Package</h2>
             </div>
         </div>
-    <div class="card-body">
+    </div>
+    
+    <div class="card-body" style="padding: 28px;">
         <form method="POST">
             <!-- USER ASSIGNMENT GROUP -->
-             {% if session.role == 'admin' %}
-            <fieldset class="field-group">
-                <legend>Assign Users</legend>
+            {% if session.role == 'admin' %}
+            <fieldset class="field-group" style="background: linear-gradient(135deg, #f8fcff 0%, #e8f4ff 100%); border: 2px solid #d6ebff; padding: 24px; margin-bottom: 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,102,204,0.08);">
+                <legend style="color: #0066cc; font-size: 16px; font-weight: 600; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+                 Assign Users
+                </legend>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label for="assigned_users" style="font-size: 14px; margin-bottom: 10px;">
-                        <strong>Select users to assign this package:</strong>
+                    <label for="assigned_users" style="font-size: 14px; margin-bottom: 12px; color: #2c3e50; font-weight: 500;">
+                        Select users to assign this package:
                     </label>
-                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: white; max-height: 200px; overflow-y: auto;">
+                    <div style="border: 2px solid #e8ecef; border-radius: 8px; padding: 16px; background-color: white; max-height: 280px; overflow-y: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
                         {% for username, user_data in users.items() %}
                         {% if username != 'admin' %}
-                        <label style="display: block; padding: 8px; margin-bottom: 5px; background-color: #f9f9f9; border-radius: 3px; cursor: pointer; transition: all 0.2s;" 
-                            onmouseover="this.style.backgroundColor='#e8f4ff'" 
-                            onmouseout="this.style.backgroundColor='#f9f9f9'">
-                            <input type="checkbox" name="assigned_users" value="{{ username }}" style="margin-right: 8px;">
-                            <strong>{{ user_data.name }}</strong> <span style="color: #666; font-size: 12px;">({{ username }})</span>
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; margin-bottom: 8px; background: white; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: all 0.2s;" 
+                            onmouseover="this.style.borderColor='#0066cc'; this.style.boxShadow='0 4px 12px rgba(0,102,204,0.12)'; this.style.transform='translateX(4px)'" 
+                            onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'; this.style.transform='translateX(0)'">
+                            <input type="checkbox" name="assigned_users" value="{{ username }}" 
+                                   style="width: 20px; height: 20px; cursor: pointer; accent-color: #0066cc;">
+                            <div style="flex: 1;">
+                                <strong style="font-size: 14px; color: #0066cc;">{{ user_data.name }}</strong> 
+                                <span style="color: #6c757d; font-size: 12px; font-weight: 400;">(@{{ username }})</span>
+                                <div style="font-size: 11px; color: #6c757d; margin-top: 2px;">
+                                    <span class="status-ongoing" style="padding: 2px 8px; border-radius: 10px; font-size: 10px;">{{ user_data.role|title }}</span>
+                                </div>
+                            </div>
                         </label>
                         {% endif %}
                         {% endfor %}
                     </div>
-                    <small style="color: #666; font-size: 12px; display: block; margin-top: 8px;">
-                        Select one or more users to assign
-                    </small>
+                    <div style="margin-top: 12px; padding: 12px 16px; background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%); border-left: 4px solid #ffc107; border-radius: 6px; font-size: 12px; color: #856404; box-shadow: 0 2px 6px rgba(255,193,7,0.15);">
+                        <strong style="font-size: 13px;"> Note:</strong> Select at least one user to assign this package to.
+                    </div>
                 </div>
             </fieldset>
             {% endif %}
             
             <!-- PACKAGE DETAILS GROUP -->
-            <fieldset class="field-group" style="margin-top: 20px;>
-                <legend>Package Details</legend>
+            <fieldset class="field-group" style="background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%); border: 2px solid #e0e4e8; padding: 24px; margin-bottom: 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <legend style="color: #2c3e50; font-size: 16px; font-weight: 600; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+                    📦 Package Details
+                </legend>
+                
                 <div class="form-row">
                     {% set field_count = 0 %}
                     {% for field_name, field_config in config.fields.items() %}
@@ -54,25 +67,47 @@
                     
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="{{ field_name }}">{{ field_config.label }}:</label>
+                            <label for="{{ field_name }}" style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">
+                                {{ field_config.label }}:
+                            </label>
                             
                             {% if field_config.type == 'text' %}
-                            <input type="text" 
-                                id="{{ field_name }}" 
-                                name="{{ field_name }}" 
-                                class="form-control"
-                                placeholder="Enter {{ field_config.label|lower }}...">
+                                {% if field_name == 'remarks' or field_name == 'REMARKS' %}
+                                <textarea id="{{ field_name }}" 
+                                        name="{{ field_name }}" 
+                                        class="form-control"
+                                        rows="3"
+                                        placeholder="Enter {{ field_config.label|lower }}..."
+                                        style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; resize: vertical; font-family: inherit;"
+                                        onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                        onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'"></textarea>
+                                {% else %}
+                                <input type="text" 
+                                    id="{{ field_name }}" 
+                                    name="{{ field_name }}" 
+                                    class="form-control"
+                                    placeholder="Enter {{ field_config.label|lower }}..."
+                                    style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                                    onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                    onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
+                                {% endif %}
                             
                             {% elif field_config.type == 'date' %}
                             <input type="date" 
                                 id="{{ field_name }}" 
                                 name="{{ field_name }}" 
-                                class="form-control">
+                                class="form-control"
+                                style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer;"
+                                onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                             
                             {% elif field_config.type == 'dropdown' %}
                             <select id="{{ field_name }}" 
                                     name="{{ field_name }}" 
-                                    class="form-control">
+                                    class="form-control"
+                                    style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer;"
+                                    onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                    onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 <option value="">Select {{ field_config.label|lower }}...</option>
                                 {% for option in field_config.options %}
                                 <option value="{{ option }}">{{ option }}</option>
@@ -83,12 +118,15 @@
                             <select id="{{ field_name }}" 
                                     name="{{ field_name }}" 
                                     class="form-control" 
-                                    multiple>
+                                    multiple
+                                    style="padding: 12px 16px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease; cursor: pointer; height: 120px;"
+                                    onfocus="this.style.borderColor='#0066cc'; this.style.boxShadow='0 0 0 4px rgba(0,102,204,0.1)'"
+                                    onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'">
                                 {% for option in field_config.options %}
                                 <option value="{{ option }}">{{ option }}</option>
                                 {% endfor %}
                             </select>
-                            <small style="color: #666; font-size: 12px;">Hold Ctrl/Cmd to select multiple</small>
+                            <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Hold Ctrl/Cmd to select multiple options</small>
                             
                             {% endif %}
                         </div>
@@ -100,36 +138,190 @@
             </fieldset>
             
             <!-- ACTION BUTTONS -->
-            <div class="form-group text-right mt-3" style="margin-bottom: 0;">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-success">Create Package</button>
+<!-- ACTION BUTTONS -->
+            <div class="form-actions" style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e8ecef; text-align: right; display: flex; justify-content: space-between; align-items: center;">
+                <a href="{{ url_for('dashboard') }}" 
+                   class="btn btn-secondary" 
+                   style="padding: 12px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">
+                   Cancel
+                </a>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" 
+                            onclick="saveAsDraft()"
+                            class="btn btn-secondary" 
+                            style="padding: 12px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; background: #6c757d; border: 2px solid #6c757d; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">💾</span>
+                        Save as Draft
+                    </button>
+                    <button type="submit" 
+                            class="btn btn-success" 
+                            style="padding: 12px 32px; font-size: 14px; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3); transition: all 0.2s ease;">
+                        Create Package
+                    </button>
+                </div>
             </div>
         </form>
+    </div>
+</div>
 
 <script>
-// Auto-expand textareas
-document.addEventListener('DOMContentLoaded', function() {
-    const textareas = document.querySelectorAll('input[type="text"]');
-    textareas.forEach(textarea => {
-        if (textarea.name === 'remarks') {
-            const newTextarea = document.createElement('textarea');
-            newTextarea.name = textarea.name;
-            newTextarea.id = textarea.id;
-            newTextarea.className = textarea.className;
-            newTextarea.rows = 3;
-            textarea.parentNode.replaceChild(newTextarea, textarea);
-        }
-    });
-});
-
-// Ensure at least one user is selected
+// Ensure at least one user is selected (admin only)
+{% if session.role == 'admin' %}
 document.querySelector('form').addEventListener('submit', function(e) {
     const checkboxes = document.querySelectorAll('input[name="assigned_users"]:checked');
     if (checkboxes.length === 0) {
         e.preventDefault();
-        alert('Please select at least one user to assign this package to.');
+        alert('⚠️ Please select at least one user to assign this package to.');
         return false;
     }
+});
+{% endif %}
+
+// Form validation feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value) {
+                this.style.borderColor = '#dc3545';
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.style.borderColor === 'rgb(220, 53, 69)') {
+                this.style.borderColor = '#e8ecef';
+            }
+        });
+    });
+});
+</script>
+
+<script>
+function saveAsDraft() {
+    // Get form data
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const draftData = {};
+    
+    for (let [key, value] of formData.entries()) {
+        draftData[key] = value;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('package_draft', JSON.stringify(draftData));
+    
+    // Show success message
+    showToast('Draft saved successfully! ✓', 'success');
+}
+
+function loadDraft() {
+    const draft = localStorage.getItem('package_draft');
+    if (draft) {
+        const draftData = JSON.parse(draft);
+        const form = document.querySelector('form');
+        
+        // Populate form fields
+        for (let [key, value] of Object.entries(draftData)) {
+            const field = form.elements[key];
+            if (field) {
+                if (field.type === 'checkbox') {
+                    field.checked = value === 'on' || value === '1';
+                } else {
+                    field.value = value;
+                }
+            }
+        }
+        
+        // Show notification
+        showToast('Draft loaded! 📋', 'info');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #28a745 0%, #20873a 100%)' : 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1000;
+        font-weight: 600;
+        font-size: 14px;
+        animation: slideIn 0.3s ease;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Load draft on page load
+window.addEventListener('DOMContentLoaded', function() {
+    // Check if there's a draft
+    if (localStorage.getItem('package_draft')) {
+        const loadButton = document.createElement('div');
+        loadButton.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #856404;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            z-index: 1000;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        `;
+        loadButton.innerHTML = '💾 You have a saved draft. <span style="text-decoration: underline;">Click to load</span>';
+        loadButton.onclick = function() {
+            loadDraft();
+            loadButton.remove();
+        };
+        document.body.appendChild(loadButton);
+    }
+});
+
+// Clear draft on successful submission
+document.querySelector('form').addEventListener('submit', function() {
+    localStorage.removeItem('package_draft');
 });
 </script>
 {% endblock %}

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Ticketing Tool{% endblock %}</title>
+    
+    <!-- Flatpickr Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
     <style>
         * {
             margin: 0;
@@ -620,6 +625,46 @@
         .table tbody tr:hover td:last-child {
             background-color: #e8f4ff;
         }
+/* Flatpickr Date Picker Custom Styling */
+        .flatpickr-calendar {
+            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.2) !important;
+            border: 2px solid #0066cc !important;
+            border-radius: 12px !important;
+            font-family: Arial, sans-serif !important;
+        }
+        
+        .flatpickr-day.selected {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%) !important;
+            border-color: #0066cc !important;
+        }
+        
+        .flatpickr-day.today {
+            border-color: #0066cc !important;
+        }
+        
+        .flatpickr-day:hover {
+            background: #e8f4ff !important;
+            border-color: #0066cc !important;
+        }
+        
+        .flatpickr-months .flatpickr-month {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%) !important;
+            color: white !important;
+        }
+        
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: #0066cc !important;
+            color: white !important;
+        }
+        
+        .flatpickr-weekdays {
+            background: #f8f9fa !important;
+        }
+        
+        span.flatpickr-weekday {
+            color: #495057 !important;
+            font-weight: 600 !important;
+        }
 
         /* Responsive admin grid */
         @media (max-width: 768px) {
@@ -702,6 +747,37 @@
                 display: none;
             }
         }
+
+/* Urgency Indicator Animations */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+            }
+            50% {
+                box-shadow: 0 2px 20px rgba(220, 53, 69, 0.8);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+            }
+        }
+        
+        /* Urgency colors */
+        .urgency-critical {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .urgency-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #856404;
+        }
+        
+        .urgency-normal {
+            background: linear-gradient(135deg, #28a745 0%, #20873a 100%);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -753,5 +829,91 @@
         
         {% block content %}{% endblock %}
     </div>
+    
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" 
+            style="display: none; 
+                position: fixed; 
+                bottom: 20px; 
+                left: 50%; 
+                transform: translateX(-50%);
+                z-index: 99; 
+                border: none; 
+                outline: none; 
+                background: white; 
+                color: #0066cc; 
+                cursor: pointer; 
+                width: 40px; 
+                height: 40px; 
+                border-radius: 50%; 
+                font-size: 18px; 
+                transition: all 0.3s ease;"
+            onclick="scrollToTop()"
+            onmouseover="this.style.transform='translate(-50%, -3px) scale(1.1)';"
+            onmouseout="this.style.transform='translateX(-50%) scale(1)';"
+            title="Back to top">
+        ↑
+    </button>
+
+
+
+    <script>
+    // Back to Top Button functionality
+    const backToTopBtn = document.getElementById("backToTopBtn");
+    
+    window.onscroll = function() {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            backToTopBtn.style.display = "block";
+            backToTopBtn.style.opacity = "1";
+        } else {
+            backToTopBtn.style.opacity = "0";
+            setTimeout(function() {
+                if (document.body.scrollTop <= 300 && document.documentElement.scrollTop <= 300) {
+                    backToTopBtn.style.display = "none";
+                }
+            }, 300);
+        }
+    };
+    
+    function scrollToTop() {
+        const scrollDuration = 500;
+        const scrollStep = -window.scrollY / (scrollDuration / 15);
+        
+        const scrollInterval = setInterval(function(){
+            if (window.scrollY !== 0) {
+                window.scrollBy(0, scrollStep);
+            } else {
+                clearInterval(scrollInterval);
+            }
+        }, 15);
+    }
+    </script>
+    <script>
+    // Initialize date pickers on all date inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        
+        dateInputs.forEach(input => {
+            flatpickr(input, {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y",
+                allowInput: true,
+                theme: "light",
+                position: "auto",
+                static: false,
+                monthSelectorType: "static",
+                onReady: function(selectedDates, dateStr, instance) {
+                    instance.calendarContainer.style.cssText = `
+                        box-shadow: 0 8px 24px rgba(0, 102, 204, 0.2) !important;
+                        border: 2px solid #0066cc !important;
+                        border-radius: 12px !important;
+                        font-family: Arial, sans-serif !important;
+                    `;
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
