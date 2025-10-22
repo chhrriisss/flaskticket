@@ -114,3 +114,4 @@ class EmailPreference(db.Model):
             'column_deleted': self.column_deleted,
             'unsubscribed': self.unsubscribed
         }
+    

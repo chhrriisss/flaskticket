@@ -3,6 +3,123 @@
 {% block title %}Dashboard - Ticketing Tool{% endblock %}
 
 {% block content %}
+<!-- SEARCH PANEL - NOW FIRST -->
+<div class="card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: none; border-radius: 8px; margin-bottom: 24px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 20px 28px; border-radius: 8px 8px 0 0; border: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: white; letter-spacing: -0.3px;">Search & Filter Packages</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body" id="searchPanelBody" style="padding: 28px; background: linear-gradient(135deg, #f8fcff 0%, #ffffff 100%);">
+        <!-- Global Text Search -->
+        <div style="margin-bottom: 24px;">
+            <label style="font-weight: 600; font-size: 14px; color: #2c3e50; margin-bottom: 10px; display: block;">
+                Quick Search
+            </label>
+            <div style="position: relative;">
+                <input type="text" 
+                       id="searchText" 
+                       placeholder="Search by Package ID, Customer, or any field..." 
+                       style="width: 100%; padding: 14px 20px 14px 50px; font-size: 14px; border: 2px solid #e8ecef; border-radius: 8px; background: white; transition: all 0.2s ease;"
+                       onfocus="this.style.borderColor='#17a2b8'; this.style.boxShadow='0 0 0 4px rgba(23,162,184,0.1)'"
+                       onblur="this.style.borderColor='#e8ecef'; this.style.boxShadow='none'"
+                       onkeyup="if(event.key === 'Enter') performSearch()">
+            </div>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            
+            <!-- Status Filter -->
+            <div>
+                <label style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">
+                    Status
+                </label>
+                <select id="statusFilter" 
+                        multiple 
+                        style="width: 100%; height: 120px; padding: 8px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; cursor: pointer;"
+                        onfocus="this.style.borderColor='#17a2b8'"
+                        onblur="this.style.borderColor='#e8ecef'">
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="not_started"> Not Started</option>
+                    <option value="delayed"> Delayed</option>
+                </select>
+                <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Hold Ctrl/Cmd to select multiple</small>
+            </div>
+
+
+            <!-- Assigned Users Filter (Admin only) -->
+            {% if session.role == 'admin' %}
+            <div>
+                <label style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">
+                     Assigned Users
+                </label>
+                <select id="userFilter" 
+                        multiple 
+                        style="width: 100%; height: 120px; padding: 8px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; cursor: pointer;"
+                        onfocus="this.style.borderColor='#17a2b8'"
+                        onblur="this.style.borderColor='#e8ecef'">
+                    {% for username, user_data in users.items() %}
+                    {% if username != 'admin' %}
+                    <option value="{{ username }}">{{ user_data.name }} (@{{ username }})</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px;">Hold Ctrl/Cmd to select multiple</small>
+            </div>
+            {% endif %}
+
+            <!-- Custom Field Filters -->
+            {% for field_name, field_config in config.fields.items() %}
+            {% if field_config.type == 'dropdown' and field_name not in ['STATUS', 'status'] %}
+            <div>
+                <label style="font-weight: 600; font-size: 13px; color: #2c3e50; margin-bottom: 8px; display: block;">
+                    {{ field_config.label }}
+                </label>
+                <select id="filter_{{ field_name }}" 
+                        style="width: 100%; padding: 10px; font-size: 13px; border: 2px solid #e8ecef; border-radius: 8px; background: white; cursor: pointer;"
+                        onfocus="this.style.borderColor='#17a2b8'"
+                        onblur="this.style.borderColor='#e8ecef'">
+                    <option value="">All {{ field_config.label }}</option>
+                    {% for option in field_config.options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px; padding-top: 20px; border-top: 2px solid #e8ecef; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 12px;">
+                <button onclick="performSearch()" 
+                        class="btn btn-primary" 
+                        style="padding: 12px 28px; font-size: 14px; font-weight: 600; border-radius: 6px; background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); border: none; box-shadow: 0 2px 8px rgba(23,162,184,0.3);">
+                     Search
+                </button>
+                <button onclick="clearFilters()" 
+                        class="btn btn-secondary" 
+                        style="padding: 12px 28px; font-size: 14px; font-weight: 600; border-radius: 6px;">
+                     Clear All
+                </button>
+            </div>
+            
+        </div>
+
+        <!-- Search Results Summary -->
+        <div id="searchResults" style="display: none; margin-top: 20px; padding: 16px 20px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 4px solid #28a745; border-radius: 6px;">
+            <span id="resultsText" style="font-size: 14px; color: #155724; font-weight: 600;"></span>
+            <button onclick="clearSearch()" style="float: right; background: none; border: none; color: #155724; cursor: pointer; font-weight: 600;"> Clear</button>
+        </div>
+    </div>
+</div>
 <!-- Quick Stats at the top (Admin only) -->
 {% if session.role == 'admin' %}
 <div class="card" style="margin-bottom: 24px;">
@@ -13,7 +130,7 @@
     </div>
     <div class="card-body">
         {% set counts = namespace(not_started=0, ongoing=0, completed=0, delayed=0) %}
-        
+
         {% for pkg_id, pkg in packages.items() %}
             {% if pkg.data_timeline %}
                 {% set latest_col = pkg.gantt_columns[-1] %}
@@ -27,19 +144,26 @@
             {% set actual_closure = latest_data.get('ACTUAL CLOSURE DATE', '') %}
             {% set commercial_target = latest_data.get('COMMERCIAL TARGET DATE', '') %}
             
+            {# Completed takes priority #}
             {% if actual_closure %}
                 {% set counts.completed = counts.completed + 1 %}
+            
+            {# Not started if no SOW #}
             {% elif not sow or sow|upper == 'NO' or not sow_date %}
                 {% set counts.not_started = counts.not_started + 1 %}
+            
+            {# Check if delayed before marking as ongoing #}
+            {% elif commercial_target %}
+                {% set today = '2025-10-17' %}
+                {% if commercial_target < today %}
+                    {% set counts.delayed = counts.delayed + 1 %}
+                {% else %}
+                    {% set counts.ongoing = counts.ongoing + 1 %}
+                {% endif %}
+            
+            {# Default to ongoing if has SOW but no target date #}
             {% else %}
                 {% set counts.ongoing = counts.ongoing + 1 %}
-                
-                {% if commercial_target %}
-                    {% set today = '2025-10-09' %}
-                    {% if commercial_target < today %}
-                        {% set counts.delayed = counts.delayed + 1 %}
-                    {% endif %}
-                {% endif %}
             {% endif %}
         {% endfor %}
         
@@ -346,4 +470,362 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+// ==================== DASHBOARD SEARCH & FILTER FUNCTIONALITY ====================
+
+// Global variable to store all packages for filtering
+let allPackages = {};
+
+// Store initial package data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Capture all packages from the table
+    const tableRows = document.querySelectorAll('.dashboard-table tbody tr');
+    tableRows.forEach(row => {
+        const packageId = row.cells[0].textContent.trim();
+        
+        // Extract all data from the row
+        const rowData = {
+            id: packageId,
+            element: row,
+            statusText: row.cells[1].textContent.trim().toLowerCase(),
+            fields: {},
+            assignedUsers: []
+        };
+        
+        // Extract field data from all cells
+        const fieldCells = row.querySelectorAll('td');
+        fieldCells.forEach((cell, index) => {
+            const text = cell.textContent.trim();
+            rowData.fields[`field_${index}`] = text.toLowerCase();
+        });
+        
+        // Extract assigned users
+        const userBadges = row.querySelectorAll('.user-badge');
+        userBadges.forEach(badge => {
+            rowData.assignedUsers.push(badge.textContent.trim());
+        });
+        
+        // Determine actual status based on the same logic as status overview
+        rowData.actualStatus = determinePackageStatus(row);
+        
+        allPackages[packageId] = rowData;
+    });
+});
+
+// Determine package status using the same logic as Status Overview
+function determinePackageStatus(row) {
+    // Get all field cells
+    const cells = row.querySelectorAll('td');
+    let sow = '';
+    let sowDate = '';
+    let actualClosure = '';
+    let commercialTarget = '';
+    
+    // Extract field values by searching through cells
+    cells.forEach(cell => {
+        const text = cell.textContent.trim();
+        const prevHeader = cell.cellIndex;
+        
+        // Try to identify fields by their position or content
+        // This is a fallback - ideally we'd have data attributes
+        if (cell.querySelector('input[type="date"]')) {
+            const value = cell.querySelector('input[type="date"]')?.value || text;
+            // Determine which date field this is based on context
+        }
+    });
+    
+    // Get data from the row's data attributes or visible content
+    // We'll use a more robust approach: check the urgency indicator and status badge
+    const statusBadge = row.querySelector('[class*="status-"]');
+    const urgencyIndicator = row.querySelector('[style*="pulse"]') || row.querySelector('[title*="Overdue"]');
+    const warningIndicator = row.querySelector('[title*="Due soon"]');
+    
+    // Priority logic matching the status overview:
+    // 1. Check for completed (has actual closure date or status says completed)
+    const hasCompletedStatus = statusBadge?.textContent.toLowerCase().includes('completed');
+    if (hasCompletedStatus) {
+        return 'completed';
+    }
+    
+    // 2. Check for delayed (has urgency indicator with "!")
+    if (urgencyIndicator) {
+        return 'delayed';
+    }
+    
+    // 3. Check for not started (no SOW or status indicates not started)
+    const statusText = statusBadge?.textContent.toLowerCase() || '';
+    if (statusText.includes('not') || statusText === '' || statusText === '-') {
+        return 'not_started';
+    }
+    
+    // 4. Check for cancelled
+    if (statusText.includes('cancelled') || statusText.includes('cancel')) {
+        return 'cancelled';
+    }
+    
+    // 5. Default to ongoing if it has a status
+    if (statusText.includes('ongoing') || statusText.includes('hold')) {
+        return 'ongoing';
+    }
+    
+    // Fallback: if has any status, consider it ongoing
+    return statusText ? 'ongoing' : 'not_started';
+}
+
+// Main search function
+function performSearch() {
+    const searchText = document.getElementById('searchText').value.toLowerCase().trim();
+    const statusFilter = Array.from(document.getElementById('statusFilter').selectedOptions).map(opt => opt.value);
+    const userFilterElement = document.getElementById('userFilter');
+    const userFilter = userFilterElement ? Array.from(userFilterElement.selectedOptions).map(opt => opt.value) : [];
+    
+    // Get custom field filters
+    const customFilters = {};
+    document.querySelectorAll('[id^="filter_"]').forEach(select => {
+        if (select.value) {
+            customFilters[select.id] = select.value.toLowerCase();
+        }
+    });
+    
+    let visibleCount = 0;
+    let totalCount = 0;
+    
+    // Filter each package row
+    Object.values(allPackages).forEach(pkg => {
+        totalCount++;
+        let isVisible = true;
+        
+        // Text search filter
+        if (searchText) {
+            const searchableText = [
+                pkg.id,
+                ...Object.values(pkg.fields),
+                ...pkg.assignedUsers
+            ].join(' ').toLowerCase();
+            
+            if (!searchableText.includes(searchText)) {
+                isVisible = false;
+            }
+        }
+        
+        // Status filter - using the same logic as status overview
+        if (statusFilter.length > 0 && isVisible) {
+            // Use the pre-determined actual status
+            if (!statusFilter.includes(pkg.actualStatus)) {
+                isVisible = false;
+            }
+        }
+        
+        // User filter
+        if (userFilter.length > 0 && isVisible) {
+            const hasUser = userFilter.some(user => pkg.assignedUsers.includes(user));
+            if (!hasUser) {
+                isVisible = false;
+            }
+        }
+        
+        // Custom field filters
+        if (Object.keys(customFilters).length > 0 && isVisible) {
+            for (const [filterId, filterValue] of Object.entries(customFilters)) {
+                const fieldFound = Object.values(pkg.fields).some(fieldValue => 
+                    fieldValue.includes(filterValue)
+                );
+                if (!fieldFound) {
+                    isVisible = false;
+                    break;
+                }
+            }
+        }
+        
+        // Show/hide row
+        if (isVisible) {
+            pkg.element.style.display = '';
+            visibleCount++;
+        } else {
+            pkg.element.style.display = 'none';
+        }
+    });
+    
+    // Show results summary
+    showSearchResults(visibleCount, totalCount);
+    
+    // Update status overview counts based on visible packages
+    updateStatusCounts();
+}
+
+// Update status overview counts based on visible packages
+function updateStatusCounts() {
+    const counts = {
+        not_started: 0,
+        ongoing: 0,
+        completed: 0,
+        delayed: 0,
+        total: 0
+    };
+    
+    // Count visible packages by status
+    Object.values(allPackages).forEach(pkg => {
+        if (pkg.element.style.display !== 'none') {
+            counts.total++;
+            counts[pkg.actualStatus] = (counts[pkg.actualStatus] || 0) + 1;
+        }
+    });
+    
+    // Update the stat cards (only if they exist and search is active)
+    const searchText = document.getElementById('searchText').value.trim();
+    const statusFilter = document.getElementById('statusFilter').selectedOptions.length;
+    const userFilterElement = document.getElementById('userFilter');
+    const userFilter = userFilterElement ? userFilterElement.selectedOptions.length : 0;
+    
+    // Only update if filters are active
+    if (searchText || statusFilter > 0 || userFilter > 0) {
+        updateStatCard('Total Packages', counts.total);
+        updateStatCard('Not Started', counts.not_started);
+        updateStatCard('Ongoing', counts.ongoing);
+        updateStatCard('Completed', counts.completed);
+        updateStatCard('Delayed', counts.delayed);
+    }
+}
+
+// Helper function to update individual stat cards
+function updateStatCard(label, value) {
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        const labelElement = card.querySelector('.stat-label');
+        if (labelElement && labelElement.textContent.includes(label)) {
+            const valueElement = card.querySelector('.stat-value');
+            if (valueElement) {
+                // Store original value if not stored
+                if (!valueElement.dataset.original) {
+                    valueElement.dataset.original = valueElement.textContent;
+                }
+                valueElement.textContent = value;
+                
+                // Add visual indicator that it's filtered
+                if (value !== parseInt(valueElement.dataset.original)) {
+                    valueElement.style.color = '#0066cc';
+                    valueElement.style.fontWeight = '800';
+                } else {
+                    valueElement.style.color = '';
+                    valueElement.style.fontWeight = '';
+                }
+            }
+        }
+    });
+}
+
+// Reset status counts to original
+function resetStatusCounts() {
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        const valueElement = card.querySelector('.stat-value');
+        if (valueElement && valueElement.dataset.original) {
+            valueElement.textContent = valueElement.dataset.original;
+            valueElement.style.color = '';
+            valueElement.style.fontWeight = '';
+        }
+    });
+}
+
+// Show search results summary
+function showSearchResults(visibleCount, totalCount) {
+    const resultsDiv = document.getElementById('searchResults');
+    const resultsText = document.getElementById('resultsText');
+    
+    if (visibleCount < totalCount) {
+        resultsText.textContent = `Showing ${visibleCount} of ${totalCount} packages`;
+        resultsDiv.style.display = 'block';
+    } else {
+        resultsDiv.style.display = 'none';
+    }
+}
+
+// Clear search results
+function clearSearch() {
+    // Show all rows
+    Object.values(allPackages).forEach(pkg => {
+        pkg.element.style.display = '';
+    });
+    
+    // Hide results summary
+    document.getElementById('searchResults').style.display = 'none';
+    
+    // Reset status counts
+    resetStatusCounts();
+}
+
+// Clear all filters
+function clearFilters() {
+    // Clear text search
+    document.getElementById('searchText').value = '';
+    
+    // Clear status filter
+    const statusFilter = document.getElementById('statusFilter');
+    Array.from(statusFilter.options).forEach(opt => opt.selected = false);
+    
+    // Clear user filter (if exists)
+    const userFilterElement = document.getElementById('userFilter');
+    if (userFilterElement) {
+        Array.from(userFilterElement.options).forEach(opt => opt.selected = false);
+    }
+    
+    // Clear custom field filters
+    document.querySelectorAll('[id^="filter_"]').forEach(select => {
+        select.value = '';
+    });
+    
+    // Clear search and show all
+    clearSearch();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchText').focus();
+    }
+    
+    // Escape to clear search
+    if (e.key === 'Escape') {
+        const searchText = document.getElementById('searchText');
+        if (document.activeElement === searchText) {
+            clearFilters();
+            searchText.blur();
+        }
+    }
+});
+
+// Auto-search on filter change
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all filter elements
+    const filterElements = [
+        'statusFilter',
+        'userFilter'
+    ];
+    
+    filterElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', performSearch);
+        }
+    });
+    
+    // Add listeners to custom field filters
+    document.querySelectorAll('[id^="filter_"]').forEach(select => {
+        select.addEventListener('change', performSearch);
+    });
+    
+    // Real-time search as you type (debounced)
+    let searchTimeout;
+    const searchInput = document.getElementById('searchText');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300); // 300ms debounce
+        });
+    }
+});
+</script>
 {% endblock %}

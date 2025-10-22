@@ -1516,6 +1516,68 @@ def gantt_data():
         })
     
     return jsonify(gantt_packages)
+
+@app.route('/api/search', methods=['POST'])
+@login_required
+def search_packages():
+    filters = request.json
+    
+    # Get all packages (you already do this)
+    all_packages = get_all_packages()
+    
+    # Python-side filtering (easier than SQL with JSON fields)
+    results = []
+    
+    for pkg_id, pkg in all_packages.items():
+        # Get latest data
+        latest_data = get_latest_package_data(pkg)
+        
+        # Check search text
+        if filters.get('search_text'):
+            search_text = filters['search_text'].lower()
+            # Search in ID
+            if search_text in pkg_id.lower():
+                results.append(pkg)
+                continue
+            # Search in all field values
+            if any(search_text in str(v).lower() for v in latest_data.values()):
+                results.append(pkg)
+                continue
+        
+        # Check status filter
+        if filters.get('status'):
+            pkg_status = latest_data.get('STATUS', '').lower()
+            if pkg_status not in [s.lower() for s in filters['status']]:
+                continue
+        
+        # Check assigned users
+        if filters.get('assigned_users'):
+            if not any(u in pkg['assigned_users'] for u in filters['assigned_users']):
+                continue
+        
+        # Check date range
+        if filters.get('date_from') or filters.get('date_to'):
+            pkg_date = pkg.get('created_at', '')[:10]
+            if filters.get('date_from') and pkg_date < filters['date_from']:
+                continue
+            if filters.get('date_to') and pkg_date > filters['date_to']:
+                continue
+        
+        # Check custom fields
+        if filters.get('custom_fields'):
+            match = True
+            for field, value in filters['custom_fields'].items():
+                if latest_data.get(field) != value:
+                    match = False
+                    break
+            if not match:
+                continue
+        
+        results.append(pkg)
+    
+    return jsonify(results)
+    
+    return jsonify(gantt_packages)
 if __name__ == '__main__':
     init_default_data()
     migrate_field_permissions_to_username()
